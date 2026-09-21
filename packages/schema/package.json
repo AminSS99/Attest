@@ -1,0 +1,19 @@
+{
+  "name": "attest-schema",
+  "version": "0.1.0",
+  "description": "Open schemas for Attest: Release Passport, build facts, release diff, declarations, findings, journeys, policy packs, and evidence capsules.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "jsonschema"
+  ],
+  "license": "Apache-2.0"
+}
