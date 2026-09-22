@@ -84,11 +84,39 @@ export const STALE_DATA_SAFETY: DataSafetyDeclaration = {
   source: 'play-console-export (stale)',
 };
 
+/**
+ * Repaired declarations for v1.3.0: photos disclosed for the new CAMERA
+ * permission, Amplitude and metrics.amplitude.com disclosed, stale audio and
+ * calendar claims dropped. Clears all five truth-gap rules.
+ */
+export const FIXED_DATA_SAFETY: DataSafetyDeclaration = {
+  schemaVersion: DATA_SAFETY_SCHEMA_VERSION,
+  collectedDataTypes: [
+    { id: 'location.precise_location', shared: false, optional: false, purpose: 'Workout tracking' },
+    { id: 'photos_and_videos.photos', shared: false, optional: true, purpose: 'AI form scanner' },
+  ],
+  sdkDisclosures: ['Firebase Analytics', 'Amplitude'],
+  domains: ['api.pulsefit.app', 'metrics.amplitude.com'],
+  effectiveDate: '2026-09-22',
+  source: 'play-console-export (updated for 1.3.0)',
+};
+
 export const PRIVACY_POLICY_TEXT = `PulseFit Privacy Policy
 
 We collect precise location to map your workouts. Workout data is stored on
 your device and synced to api.pulsefit.app. We use Firebase Analytics to
 understand feature usage. We do not sell personal data.
+
+Contact: privacy@pulsefit.app
+`;
+
+/** Updated for 1.3.0: discloses Amplitude and its collection endpoint. */
+export const FIXED_PRIVACY_POLICY_TEXT = `PulseFit Privacy Policy
+
+We collect precise location to map your workouts. Workout data is stored on
+your device and synced to api.pulsefit.app. We use Firebase Analytics and
+Amplitude (metrics.amplitude.com) to understand feature usage. We do not sell
+personal data.
 
 Contact: privacy@pulsefit.app
 `;

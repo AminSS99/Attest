@@ -15,13 +15,43 @@ import {
   materialChangeCount,
   type Claim,
   type Finding,
+  type Journey,
+  type JourneySummary,
   type ReleasePassport,
 } from 'attest-schema';
 
 import { CLI_VERSION } from './inspect.js';
+import { credentialReadiness, deriveJourneyResult } from './journey.js';
 import type { RuleInput } from './truthgap.js';
 
-export function buildPassport(input: RuleInput, claims: Claim[], findings: Finding[]): ReleasePassport {
+/** Flatten a recorded journey into the Passport's evidence-bearing summary. */
+export function summarizeJourney(journey: Journey): JourneySummary {
+  const firstFailedStep = journey.steps.find((s) => s.status !== 'pass')?.order;
+  const result = journey.lastRunResult ?? deriveJourneyResult(journey.steps);
+  return {
+    id: journey.id,
+    kind: journey.kind,
+    name: journey.name,
+    title: journey.title,
+    result,
+    stepCount: journey.steps.length,
+    firstFailedStep,
+    firstChangedStep: journey.firstChangedStep,
+    recordedAt: journey.recordedAt,
+    lastRunAt: journey.lastRunAt,
+    artifactSha256: journey.artifactSha256,
+    device: journey.device,
+    credentialRef: journey.credentialRef,
+    steps: journey.steps,
+  };
+}
+
+export function buildPassport(
+  input: RuleInput,
+  claims: Claim[],
+  findings: Finding[],
+  journeys: Journey[] = [],
+): ReleasePassport {
   const decision = computeRecommendation(findings);
   const unresolvedQuestions = findings
     .filter((f) => f.state === 'changed_requires_review' || f.state === 'evidence_missing')
@@ -37,6 +67,7 @@ export function buildPassport(input: RuleInput, claims: Claim[], findings: Findi
     diff: input.diff,
     claims,
     findings,
+    journeys: journeys.map(summarizeJourney),
     exceptions: [],
     unresolvedQuestions,
     decision,
@@ -101,6 +132,51 @@ function claimRow(c: Claim): string {
 </tr>`;
 }
 
+const RESULT_BADGE: Record<string, string> = { pass: 'ship', fail: 'hold', blocked: 'review' };
+
+function journeyCard(j: JourneySummary): string {
+  const badgeClass = RESULT_BADGE[j.result] ?? 'review';
+  const readiness = credentialReadiness(j.credentialRef);
+  const stepRows = j.steps
+    .map(
+      (s) => `<tr class="jt-${esc(s.status)}">
+  <td>${s.order}</td><td>${esc(s.action)}</td><td>${esc(s.status)}</td>
+  <td>${esc(s.expectedState)}</td><td>${esc(s.observedState)}</td>
+  <td>${s.screenshot ? `<code>${esc(s.screenshot.path)}</code> <span class="meta">${esc(s.screenshot.sha256.slice(0, 12))}…</span>` : '—'}</td>
+</tr>`,
+    )
+    .join('');
+  const firstFailed =
+    j.firstFailedStep !== undefined
+      ? `<p class="rem"><strong>First failed step:</strong> ${j.firstFailedStep} — ${esc(
+          j.steps.find((s) => s.order === j.firstFailedStep)?.action ?? '',
+        )}</p>`
+      : '';
+  const firstChanged =
+    j.firstChangedStep !== undefined
+      ? `<p class="rem"><strong>First changed step vs approved baseline:</strong> ${j.firstChangedStep}</p>`
+      : '';
+  return `<section class="finding journey ${j.result === 'fail' ? 'blocker' : j.result === 'blocked' ? 'medium' : ''}">
+  <header><span class="sev">JOURNEY</span>
+    <span class="state">${j.result.toUpperCase()}</span>
+    <code>${esc(j.id)}</code> · <code>${esc(j.kind)}</code> · ${j.stepCount} steps</header>
+  <h3>${esc(j.title)}</h3>
+  <p class="meta">recorded ${esc(j.recordedAt)}${j.lastRunAt ? ` · last run ${esc(j.lastRunAt)}` : ''}${
+    j.device ? ` · device <code>${esc(j.device.serial)}</code>` : ''
+  }${j.artifactSha256 ? ` · build <code>${esc(j.artifactSha256.slice(0, 12))}…</code>` : ''}</p>
+  ${firstFailed}${firstChanged}
+  ${
+    j.credentialRef
+      ? `<p class="meta">credential reference: <strong>${esc(j.credentialRef.label)}</strong>${
+          j.credentialRef.expiresAt ? ` · expires ${esc(j.credentialRef.expiresAt)}` : ''
+        } · readiness <strong>${esc(readiness)}</strong> (reference only — no secret stored)</p>`
+      : ''
+  }
+  <table><thead><tr><th>#</th><th>Exact step</th><th>Status</th><th>Expected</th><th>Observed</th><th>Screenshot</th></tr></thead>
+  <tbody>${stepRows}</tbody></table>
+</section>`;
+}
+
 export function renderPassportHtml(p: ReleasePassport): string {
   const badge =
     p.decision.recommendation === 'hold'
@@ -132,6 +208,8 @@ table{border-collapse:collapse;width:100%;font-size:.9rem}
 th,td{border-bottom:1px solid #e3e9ed;padding:.45rem;text-align:left}
 tr.st-contradicted td{background:#fdecea}tr.st-unsupported td{background:#fff7e0}
 .add{color:#1e7d32}.del{color:#b3261e}
+.journey{border-left-width:6px}
+tr.jt-fail td,tr.jt-blocked td{background:#fdecea}
 footer{margin-top:2rem;border-top:1px solid #d5dde3;padding-top:1rem;font-size:.8rem;color:#52616e}
 blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
 </style></head><body>
@@ -171,6 +249,8 @@ blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
 
 <h2>Truth gaps (${p.findings.length})</h2>
 ${p.findings.length === 0 ? `<p>No truth gaps detected by ruleset ${esc(p.toolset.ruleset)}.</p>` : sortByImpact(p.findings).map(findingCard).join('\n')}
+
+${p.journeys.length > 0 ? `<h2>Reviewer Twin journeys (${p.journeys.length})</h2>\n${p.journeys.map(journeyCard).join('\n')}` : ''}
 
 <h2>Truth Graph claims (${p.claims.length})</h2>
 <table><thead><tr><th>Claim</th><th>Kind</th><th>Best evidence</th><th>Status</th><th>Support/Conflict</th></tr></thead>

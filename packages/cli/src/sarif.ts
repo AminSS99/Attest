@@ -6,6 +6,7 @@
 import type { Finding, Severity } from 'attest-schema';
 
 import { CLI_VERSION } from './inspect.js';
+import { JOURNEY_RULES } from './journey.js';
 import { TRUTH_GAP_RULES } from './truthgap.js';
 
 function sarifLevel(severity: Severity): 'error' | 'warning' | 'note' {
@@ -31,7 +32,7 @@ export function toSarif(findings: Finding[], artifactFileName: string): string {
             name: 'Attest',
             version: CLI_VERSION,
             informationUri: 'https://github.com/attest-dev/attest',
-            rules: TRUTH_GAP_RULES.map((r) => ({
+            rules: [...TRUTH_GAP_RULES, ...JOURNEY_RULES].map((r) => ({
               id: r.id,
               name: r.title,
               shortDescription: { text: r.title },

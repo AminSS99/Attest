@@ -93,6 +93,9 @@ export function buildClaims(input: RuleInput, findings: Finding[]): Claim[] {
 
   // Findings attach as conflicting evidence on their subject claims.
   for (const f of findings) {
+    // Journey findings (JT-*) describe a runtime path, not a build/declaration
+    // entity; they belong in the journey section of the Passport, not here.
+    if (f.ruleId.startsWith('JT-')) continue;
     const claimIds = claimIdsForSubject(f.subject);
     for (const id of claimIds) {
       const kind = id.split(':')[0] === 'data-type' ? 'data_type' : (id.split(':')[0] as Claim['kind']);

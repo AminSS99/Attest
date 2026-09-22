@@ -11,9 +11,39 @@
 import type { ArtifactIdentity } from './build-facts.js';
 import type { ExceptionRecord } from './declarations.js';
 import type { Claim, Finding } from './finding.js';
+import type {
+  CredentialRef,
+  DeviceMetadata,
+  JourneyKind,
+  JourneyResult,
+  JourneyStep,
+} from './journey.js';
 import type { ReleaseDiff } from './release-diff.js';
 
 export const RELEASE_PASSPORT_SCHEMA_VERSION = 'attest.release-passport/1' as const;
+
+/**
+ * A journey embedded in the Passport: the run result, the first failed step,
+ * every step with expected/observed state, and screenshot hashes — so the
+ * Passport explains the reviewer path without external lookups. Full media
+ * lives in the Evidence Capsule at `journeys/<id>/…`.
+ */
+export interface JourneySummary {
+  id: string;
+  kind: JourneyKind;
+  name: string;
+  title: string;
+  result: JourneyResult;
+  stepCount: number;
+  firstFailedStep?: number;
+  firstChangedStep?: number;
+  recordedAt: string;
+  lastRunAt?: string;
+  artifactSha256?: string;
+  device?: DeviceMetadata;
+  credentialRef?: CredentialRef;
+  steps: JourneyStep[];
+}
 
 export type ReleaseRecommendation = 'ship' | 'review' | 'hold';
 
@@ -41,6 +71,8 @@ export interface ReleasePassport {
   diff: ReleaseDiff;
   claims: Claim[];
   findings: Finding[];
+  /** Reviewer/consent journeys attached to this release, with step evidence and hashes. */
+  journeys: JourneySummary[];
   exceptions: ExceptionRecord[];
   /** Open questions a human must answer before the release decision. */
   unresolvedQuestions: string[];
@@ -61,7 +93,7 @@ export function computeRecommendation(findings: Finding[]): ReleaseDecision {
   if (blockers.length > 0) {
     recommendation = 'hold';
     rationale.push(
-      `${blockers.length} confirmed contradiction${blockers.length === 1 ? '' : 's'} between the build and its declarations.`,
+      `${blockers.length} confirmed contradiction${blockers.length === 1 ? '' : 's'} between the release candidate and the promises made about it (declarations, claims, or approved journeys).`,
     );
   }
   if (review.length > 0) {

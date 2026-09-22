@@ -8,6 +8,9 @@
  *     diff.json / findings.json / findings.sarif
  *     facts/base.facts.json / facts/candidate.facts.json
  *     declarations/… (snapshots of what was imported)
+ *     journeys/<journeyId>/journey.json    ← recorded Reviewer Twin runs
+ *     journeys/<journeyId>/comparison.json ← baseline vs candidate comparison
+ *     journeys/<journeyId>/<evidence>/…    ← screenshots (binary, hashed)
  *     capsule-manifest.json  ← SHA-256 over every file + evidence root hash
  *
  * The capsule proves what evidence existed and what decision was made. It
@@ -27,6 +30,8 @@ import {
   type ReleasePassport,
 } from 'attest-schema';
 
+import type { JourneyBundle } from './journey.js';
+import { serializeComparison, serializeJourney } from './journey.js';
 import { CLI_VERSION } from './inspect.js';
 
 export const CAPSULE_MANIFEST_NAME = 'capsule-manifest.json';
@@ -37,6 +42,8 @@ export interface CapsuleInput {
   sarif: string;
   /** Declaration snapshots: path-suffix → contents (already redacted). */
   declarations: Record<string, string>;
+  /** Recorded journeys with screenshot bytes and optional baseline comparison. */
+  journeys?: JourneyBundle[];
   redactions: string[];
 }
 
@@ -55,7 +62,7 @@ export function evidenceRootHash(files: CapsuleFileEntry[]): string {
 
 export async function sealCapsule(dir: string, input: CapsuleInput): Promise<CapsuleManifest> {
   const p = input.passport;
-  const files: Record<string, string> = {
+  const textFiles: Record<string, string> = {
     'passport.json': JSON.stringify(p, null, 2),
     'passport.html': input.passportHtml,
     'diff.json': JSON.stringify(p.diff, null, 2),
@@ -65,14 +72,30 @@ export async function sealCapsule(dir: string, input: CapsuleInput): Promise<Cap
       Object.entries(input.declarations).map(([name, text]) => [`declarations/${name}`, text]),
     ),
   };
+  const binaryFiles: Record<string, Buffer> = {};
+
+  for (const bundle of input.journeys ?? []) {
+    const base = `journeys/${bundle.journey.id}`;
+    textFiles[`${base}/journey.json`] = serializeJourney(bundle.journey);
+    if (bundle.comparison) textFiles[`${base}/comparison.json`] = serializeComparison(bundle.comparison);
+    for (const [rel, bytes] of Object.entries(bundle.files)) {
+      binaryFiles[`${base}/${rel}`] = bytes;
+    }
+  }
 
   await mkdir(dir, { recursive: true });
   const entries: CapsuleFileEntry[] = [];
-  for (const [rel, text] of Object.entries(files).sort(([a], [b]) => a.localeCompare(b))) {
+  const allFiles = [
+    ...Object.entries(textFiles).map(
+      ([rel, text]): [string, Buffer] => [rel, Buffer.from(text, 'utf8')],
+    ),
+    ...Object.entries(binaryFiles),
+  ];
+  for (const [rel, bytes] of allFiles.sort(([a], [b]) => a.localeCompare(b))) {
     const abs = join(dir, rel);
     await mkdir(join(abs, '..'), { recursive: true });
-    await writeFile(abs, text, 'utf8');
-    entries.push({ path: rel, sha256: sha256(text), bytes: Buffer.byteLength(text) });
+    await writeFile(abs, bytes);
+    entries.push({ path: rel, sha256: sha256(bytes), bytes: bytes.length });
   }
 
   const manifest: CapsuleManifest = {
