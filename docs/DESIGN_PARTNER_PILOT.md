@@ -16,14 +16,34 @@ traceable technical evidence so a human can make the ship/hold call.
 
 Requires Node.js ≥ 20. No source code upload; analysis stays on your machine.
 
+> **Distribution note:** `attest-cli` is **not published** to any registry, so
+> `npm install -g attest-cli` will not work. Install from locally packed
+> tarballs instead (verified 25 September 2026 from a clean external
+> directory — see below).
+
 ```bash
-npm install -g attest-cli   # or: npm ci && npm run build in this repo
-attest --help
+# 1. From a checkout of the Attest repo, pack both workspaces:
+npm run build
+npm pack --workspace attest-schema --pack-destination /tmp
+npm pack --workspace attest-cli --pack-destination /tmp
+
+# 2. In your app repo (a directory WITHOUT an Attest checkout):
+npm init -y
+npm install /tmp/attest-schema-0.1.0.tgz /tmp/attest-cli-0.1.0.tgz
+
+# 3. Run via the local binary (no global install, no registry access):
+./node_modules/.bin/attest --help
 
 # In your app repo:
-attest init
-attest doctor               # fix blocking FAILs until only WARNs remain
+./node_modules/.bin/attest init
+./node_modules/.bin/attest doctor   # fix blocking FAILs until only WARNs remain
 ```
+
+(If you are working inside the Attest repo itself you can use
+`npm ci && npm run build` and `node packages/cli/dist/src/cli.js` directly.)
+
+Below, `attest` means `./node_modules/.bin/attest` (tarball install) or the
+equivalent in your setup.
 
 Five-minute path with the bundled PulseFit demo (shows the MVP signature —
 new SDK + permission + destination missing from declarations, reviewer journey
@@ -160,12 +180,47 @@ attest journey instructions --journey journeys/reviewer-premium-ai-1.3.0.json \
 
 ## 4. CI setup
 
+> **Vendoring requirement (read this first).** The reusable action builds
+> Attest from source: it resolves the Attest repository root as
+> `github.action_path/../../..` and requires `package.json` +
+> `packages/cli` there. Copying **only** `.github/actions/attest` into your
+> app repo does **not** work — the run fails clearly at the resolve step
+> (`Attest source not found at …`). You must vendor the full Attest source
+> into the workflow workspace. Reproducible setup (verified locally
+> 25 September 2026; a copy of just the action dir fails, a vendored source
+> tree resolves):
+>
+> ```yaml
+> steps:
+>   - uses: actions/checkout@v4 # your app repo
+>       with:
+>         fetch-depth: 0
+>   - name: Vendor Attest source
+>     run: git clone --depth 1 <attest-repo-url> attest-vendor
+>       # Or: actions/checkout@v4 with: { repository: <org>/Attest, path: attest-vendor }
+>   - name: Attest release-truth gate
+>     uses: ./attest-vendor/.github/actions/attest
+>     with:
+>       base: attest-vendor/attest-out/demo/pulsefit-1.2.0.apk # use YOUR paths
+>       candidate: app/build/outputs/apk/release/app-release.apk
+> ```
+>
+> Artifact paths in `with:` are relative to the **app workspace root**, not
+> the vendor dir — keep your builds/declarations where they are and only point
+> `uses:` at the vendored action.
+>
+> **Runner status (honest):** this Action has **not** been observed passing on
+> GitHub-hosted runners. What has passed is the local simulation in
+> `scripts/smoke-action.sh` (resolve → validate → build → compare → check →
+> passport → hygiene → gate, plus a reporting-only pass). Treat the first
+> hosted run as an experiment and report back per §6.
+
 Use the reusable composite action at `.github/actions/attest` (sample in
 `examples/github-action.yml` and `.attest/github-workflow.yml`):
 
 ```yaml
 - name: Attest release-truth gate
-  uses: ./.github/actions/attest
+  uses: ./attest-vendor/.github/actions/attest # vendored Attest source (see above)
   with:
     base: .attest/artifacts/base.apk
     candidate: app/build/outputs/apk/release/app-release.apk
@@ -231,7 +286,12 @@ demo fixtures (expects exit 2 on HOLD, plus a `fail-on: never` pass).
 
 ## 6. Pilot scorecard
 
-Fill one row per release candidate (five teams × at least one RC each):
+Fill one block per release candidate in `docs/PILOT_SCORECARD.md` (five
+teams × at least one RC each; includes setup friction, false positives,
+time to first useful finding, changes made, repeat use, and buyer). Return
+that file only — never binaries, declarations, screenshots, or credentials.
+
+Summary view:
 
 | # | Measure | How to capture | Target signal |
 | --- | --- | --- | --- |

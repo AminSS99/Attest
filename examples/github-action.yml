@@ -4,6 +4,15 @@
 # summary, Passport/Capsule as artifacts, exit 2 to block on confirmed
 # contradictions. No PR comments; no credentials, screenshots, or declaration
 # contents are published outside the workflow artifacts.
+#
+# NOTE: `uses: ./.github/actions/attest` only works in a workspace whose root
+# is the Attest source tree (the action builds from source at
+# github.action_path/../../..). An external app repo must vendor the full
+# Attest source (e.g. clone to attest-vendor/) and use
+# `./attest-vendor/.github/actions/attest` instead — copying just the action
+# directory fails clearly at the resolve step. See
+# docs/DESIGN_PARTNER_PILOT.md §4. The Action has not been observed passing on
+# GitHub-hosted runners; only scripts/smoke-action.sh (local) has passed.
 
 name: attest
 

@@ -121,6 +121,12 @@ First run (five minutes):
 
 const GITHUB_WORKFLOW_SAMPLE = `# Sample Attest release-truth gate. Copy to .github/workflows/attest.yml
 # and adjust artifact paths. See examples/github-action.yml in the Attest repo.
+#
+# NOTE: attest-cli is not published; the action below builds Attest from source
+# at github.action_path/../../.., so it only works when the Attest source tree
+# is in the workspace. An app repo must vendor the full Attest source (e.g.
+# clone to attest-vendor/) and use ./attest-vendor/.github/actions/attest.
+# Copying just the action directory fails at the resolve step.
 name: attest
 
 on:
@@ -141,11 +147,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Vendor Attest source (required — the action builds from source)
+        run: git clone --depth 1 <attest-repo-url> attest-vendor
+
       - name: Build release candidate (your existing Gradle step)
         run: ./gradlew :app:assembleRelease
 
       - name: Attest release-truth gate
-        uses: ./.github/actions/attest
+        uses: ./attest-vendor/.github/actions/attest
         with:
           base: .attest/artifacts/base.apk
           candidate: app/build/outputs/apk/release/app-release.apk
