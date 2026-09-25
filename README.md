@@ -12,8 +12,8 @@ This monorepo is the **open-source core** (Apache-2.0, see `PRODUCT_PLAN.md` §1
 
 | Package | Purpose |
 | --- | --- |
-| `packages/schema` | Open schemas: BuildFacts, ReleaseDiff, DataSafetyDeclaration, Finding, Claim, ReleasePassport, Journey, JourneyComparison, PolicyPack, EvidenceCapsule |
-| `packages/cli` | Local engine: AAB/APK inspection, two-build diff, five truth-gap rules, Reviewer Twin journey recorder/compare, SARIF, HTML Release Passport, Evidence Capsule + offline verifier |
+| `packages/schema` | Open schemas: BuildFacts, ReleaseDiff, DataSafetyDeclaration, Finding, Claim, ReleasePassport, ExceptionRecord, Journey, JourneyComparison, PolicyPack, EvidenceCapsule |
+| `packages/cli` | Local engine: AAB/APK inspection, two-build diff, five truth-gap rules, Reviewer Twin journey recorder/compare, exceptions + human ship/hold decision, SARIF, HTML Release Passport, Evidence Capsule + offline verifier |
 
 Zero runtime dependencies. The ZIP reader, binary-manifest (AXML) parser, and DEX string scanner are implemented from the format specs — fully auditable, nothing leaves your machine. Journeys are recorded human-guided over ADB: you perform each step, Attest captures the screenshot, activity, expected/observed state, and status.
 
@@ -22,9 +22,20 @@ Zero runtime dependencies. The ZIP reader, binary-manifest (AXML) parser, and DE
 ```bash
 npm install
 npm run build
-npm test          # 51 tests, including the Reviewer Twin end-to-end pipeline
+npm test          # 73 tests, including Reviewer Twin, Release Decision Workflow, and onboarding e2e
 npm run demo      # the MVP signature: truth gaps + failed reviewer journey → HOLD, repair → SHIP
+./scripts/smoke-action.sh   # realistic GitHub Action smoke test (no runner needed)
 ```
+
+Pilot onboarding (no hosted dashboard):
+
+```bash
+attest init                 # reviewable .attest/ workspace, no secrets
+attest doctor               # blocking setup checks (exit 1 on FAIL)
+```
+
+See `docs/DESIGN_PARTNER_PILOT.md` for the five-team Android pilot kit
+(installation, artifacts, Reviewer Twin, CI, evidence handling, scorecard).
 
 Then on your own artifacts:
 
@@ -47,9 +58,18 @@ attest passport --base last-week.apk --candidate candidate.apk \
   --data-safety data-safety.json \
   --journey journeys/reviewer-premium-ai-1.3.0.json --out evidence/
 attest verify evidence/        # offline tamper check (journey screenshots included)
+
+# Exceptions overlay findings without erasing them; a human makes the final call
+attest exception accept --passport evidence/passport.json --finding F-... \
+  --owner "Mobile Platform" --reason "Temporary migration window" \
+  --expires 2026-10-15 --approved-by "Release Lead"
+attest decide --passport evidence/passport.json --status ship \
+  --decided-by "Release Lead" --reason "Reviewed remaining evidence" \
+  --out evidence/approved-passport.json   # ship over HOLD requires --reason
+attest verify evidence/        # exceptions + decision are sealed in the capsule
 ```
 
-`attest check`, `attest journey compare`, and `attest passport` exit with code `2` when confirmed contradictions exist or the journey fails (CI-gateable), `0` otherwise.
+`attest check`, `attest journey compare`, `attest passport`, and `attest decide` exit with code `2` when confirmed contradictions exist, the journey fails, or the human decision is hold (CI-gateable), `0` otherwise. Usage/runtime errors exit `1`.
 
 ## The five truth-gap rules
 
@@ -82,24 +102,45 @@ Attest rehearses the store review as a repeatable journey instead of another che
 
 The Passport's **Reviewer Twin journeys** section shows the run result, the first changed and failed steps, every step with expected vs observed state, and screenshot hashes. The Capsule seals `journeys/<id>/journey.json`, `comparison.json`, and every screenshot — all covered by the evidence root hash and `attest verify`.
 
+## Release Decision Workflow
+
+The Passport recommends (`SHIP` / `REVIEW` / `HOLD`); a human decides. The decision workflow keeps both sides honest:
+
+- **`exception accept`** — approve a time-boxed exception for a specific finding id, bound to the candidate artifact hash, with owner, rationale, approver, approval time, and expiry. Findings are never rewritten: exceptions overlay evidence, and Attest's recommendation is unchanged by exceptions.
+- **`decide`** — record the final human `ship` or `hold`. Shipping over a `HOLD` (or `REVIEW`) recommendation is an explicit override and requires `--reason`. The Passport shows `Attest recommendation`, `Human decision`, `Override approved by`, `Reason`, and `Exception expires` in human-readable dates.
+- **Immutability** — a finalized decision cannot be rewritten in place. Corrections write a new Passport revision (`revision++`, `supersedes`) to a new file; the original stays byte-identical.
+- **Sealed evidence** — exceptions and the decision live inside the Evidence Capsule. `attest verify` recomputes every file hash, the evidence root, and the Passport's content-addressed id — any post-decision modification fails offline verification.
+- **`seal`** — seal a standalone Passport into a capsule, or reseal from an existing capsule (`--from`).
+
 ## Evidence Capsule
 
-`attest passport` seals an Evidence Capsule: passport (HTML + JSON), diff, findings (+ SARIF), declaration snapshots, journey records with screenshots and baseline comparisons, and a manifest with a SHA-256 over every file plus an evidence root hash. `attest verify` re-checks it offline — it proves what evidence existed and what decision was made, without an Attest subscription, and without certifying compliance.
+`attest passport` seals an Evidence Capsule: passport (HTML + JSON), diff, findings (+ SARIF), declaration snapshots, journey records with screenshots and baseline comparisons, approved exceptions, the final human decision, and a manifest with a SHA-256 over every file plus an evidence root hash. `attest verify` re-checks it offline — every file hash, the evidence root, and the Passport's content-addressed id — proving what evidence existed and what decision was made, without an Attest subscription, and without certifying compliance.
 
 ## Security principles (inherited from the plan)
 
 - Local analysis is the default; source code is never required.
 - Evidence exports redact secrets and personal data.
 - Credentials never appear in journeys, passports, or capsules — only expiring references.
+- Exceptions require a named owner and approver, bind to a finding + artifact hash, and expire; they never rewrite findings.
+- A human decides ship/hold; overrides require an explicit reason. Finalized decisions are immutable.
+- The GitHub Action publishes no PR comments and uploads screenshots/declaration contents only as workflow artifacts, never into step summaries or PR threads.
 - AI (when added to hosted surfaces) may summarize evidence but can never invent runtime facts, mark a release compliant, or approve exceptions.
+
+## Onboarding
+
+- **`init`** — scaffolds a reviewable `.attest/` workspace: `config.json`, declaration templates, journeys directories, output guidance (`attest-out/`, gitignored), and a sample GitHub workflow. No secrets are created.
+- **`doctor`** — checks Node ≥ 20, ADB presence when Reviewer Twin is configured, artifact/declaration paths, journey parsing, credential expiry, output writability, and accidental secret values. Prints `PASS`/`WARN`/`FAIL` with actionable hints; exits `1` on blocking errors.
 
 ## Roadmap mapping
 
 - ✅ **Weeks 1–2**: schemas, AAB/APK inspector, deterministic diff, local CLI, JSON output
 - ✅ **Weeks 3–4**: Data Safety JSON/CSV import, privacy-policy/listing import, first Truth Graph relationships, five truth-gap rules
 - ✅ **Weeks 5–6**: human-guided Reviewer Twin recorder (ADB), journey compare with first-failed-step detection, credential references + readiness, HTML Release Passport (with journey section), Evidence Capsule including journey evidence
-- 🔜 Exception approval + final ship/hold record, reusable GitHub Action + PR summary, release history, five Android design-partner pilots
+- ✅ **Weeks 7–8**: exception approval with owner/expiry/artifact binding, final human ship/hold record with override reason + immutable revisions, exceptions/decision sealed in the capsule, reusable GitHub Action with SARIF + step summary + artifacts + PR gate (ROOT fixed, inputs validated, journey-aware, gate-reflecting outputs), `attest init`/`doctor` onboarding, `docs/DESIGN_PARTNER_PILOT.md` pilot kit, CI (`build` + `test` + `demo` + `scripts/smoke-action.sh` + composite-action gate)
+- 🔜 Release history, five Android design-partner pilots (hosted history only after two teams voluntarily run Attest for a second release)
 
 ## CI
 
-See `examples/github-action.yml` for a pull-request gate that uploads SARIF to GitHub code scanning.
+Use the reusable action in `.github/actions/attest` (see `examples/github-action.yml` for a full workflow). It validates inputs (missing artifacts, incomplete journey pairs), runs `journey compare` first (text for the summary + JSON feeding `check`/`passport`), then `attest check` (text + SARIF must agree), seals the Passport / Evidence Capsule, uploads SARIF to GitHub code scanning, writes the release delta and blocking contradictions to the step summary, uploads the Passport / Capsule as workflow artifacts, and exits `2` to block the PR on confirmed contradictions or failed journeys (`fail-on: never` reports without failing). Top-level `exit-code` reflects the final gate including journey failures (`check-exit-code` / `compare-exit-code` exposed separately). It posts no PR comments and publishes no credentials, screenshots, or declaration contents by default.
+
+Repository CI (`.github/workflows/ci.yml`) runs build, tests, demo + offline capsule verification, `doctor` on fresh templates, `actionlint` (advisory only), `scripts/smoke-action.sh`, and the composite action itself on demo fixtures.

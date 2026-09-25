@@ -56,12 +56,20 @@ export interface ReleaseDecision {
   status: 'pending' | 'ship' | 'hold';
   decidedBy?: string;
   decidedAt?: string;
+  /** Required when the human decision overrides the recommendation (e.g. ship over hold). */
+  reason?: string;
+  /** True when the human decision disagrees with the deterministic recommendation. */
+  override?: boolean;
 }
 
 export interface ReleasePassport {
   schemaVersion: typeof RELEASE_PASSPORT_SCHEMA_VERSION;
   /** Content-addressed id of the passport document. */
   id: string;
+  /** Passport revision. Corrections supersede the prior finalized decision. */
+  revision: number;
+  /** Id of the passport this one supersedes, when this is a corrective revision. */
+  supersedes?: string;
   app: { packageName: string };
   base: ArtifactIdentity;
   candidate: ArtifactIdentity;

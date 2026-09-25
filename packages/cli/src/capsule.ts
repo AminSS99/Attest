@@ -33,6 +33,7 @@ import {
 import type { JourneyBundle } from './journey.js';
 import { serializeComparison, serializeJourney } from './journey.js';
 import { CLI_VERSION } from './inspect.js';
+import { computePassportId, renderPassportHtml } from './passport.js';
 
 export const CAPSULE_MANIFEST_NAME = 'capsule-manifest.json';
 
@@ -119,7 +120,7 @@ export async function sealCapsule(dir: string, input: CapsuleInput): Promise<Cap
   return manifest;
 }
 
-/** Offline verification: recompute every hash and the evidence root. */
+/** Offline verification: recompute every hash, the evidence root, and the Passport id. */
 export async function verifyCapsule(dir: string): Promise<CapsuleVerification> {
   const errors: string[] = [];
   let manifest: CapsuleManifest;
@@ -157,6 +158,21 @@ export async function verifyCapsule(dir: string): Promise<CapsuleVerification> {
   const evidenceRootOk =
     manifest.files.length > 0 && evidenceRootHash(manifest.files) === manifest.evidenceRootHash;
 
+  // The Passport carries its own content-addressed id — recompute it so a
+  // swapped passport.json fails even when the attacker also fixed the hash.
+  if (onDisk.has('passport.json') && !mismatches.some((m) => m.path === 'passport.json')) {
+    try {
+      const p = JSON.parse(await readFile(join(dir, 'passport.json'), 'utf8')) as ReleasePassport;
+      const { id: claimed, ...rest } = p;
+      const actual = computePassportId(rest);
+      if (claimed !== actual) {
+        errors.push(`Passport id mismatch: document claims ${claimed}, content hashes to ${actual}.`);
+      }
+    } catch (err) {
+      errors.push(`Cannot verify passport.json integrity: ${(err as Error).message}`);
+    }
+  }
+
   return {
     ok: errors.length === 0 && mismatches.length === 0 && missing.length === 0 && evidenceRootOk,
     checked,
@@ -166,6 +182,55 @@ export async function verifyCapsule(dir: string): Promise<CapsuleVerification> {
     evidenceRootOk,
     errors,
   };
+}
+
+/**
+ * Re-seal an existing capsule after its Passport gained exceptions or a final
+ * decision. Every other evidence file keeps its bytes and its manifest entry;
+ * only `passport.json` / `passport.html` are rewritten and the evidence root
+ * is recomputed. Post-decision edits outside this function fail `verifyCapsule`.
+ */
+export async function resealCapsule(
+  dir: string,
+  passport: ReleasePassport,
+): Promise<CapsuleManifest> {
+  let previous: CapsuleManifest;
+  try {
+    previous = JSON.parse(await readFile(join(dir, CAPSULE_MANIFEST_NAME), 'utf8'));
+  } catch (err) {
+    throw new Error(
+      `Cannot reseal ${dir}: no readable ${CAPSULE_MANIFEST_NAME} (${(err as Error).message})`,
+    );
+  }
+
+  const passportJson = Buffer.from(JSON.stringify(passport, null, 2), 'utf8');
+  const passportHtml = Buffer.from(renderPassportHtml(passport), 'utf8');
+  await writeFile(join(dir, 'passport.json'), passportJson);
+  await writeFile(join(dir, 'passport.html'), passportHtml);
+
+  const files: CapsuleFileEntry[] = [];
+  for (const entry of previous.files) {
+    if (entry.path === 'passport.json') {
+      files.push({ ...entry, sha256: sha256(passportJson), bytes: passportJson.length });
+    } else if (entry.path === 'passport.html') {
+      files.push({ ...entry, sha256: sha256(passportHtml), bytes: passportHtml.length });
+    } else {
+      files.push(entry);
+    }
+  }
+  // A capsule sealed without a rendered HTML still gets one on reseal.
+  if (!files.some((f) => f.path === 'passport.html')) {
+    files.push({ path: 'passport.html', sha256: sha256(passportHtml), bytes: passportHtml.length });
+    files.sort((a, b) => a.path.localeCompare(b.path));
+  }
+
+  const manifest: CapsuleManifest = {
+    ...previous,
+    files,
+    evidenceRootHash: evidenceRootHash(files),
+  };
+  await writeFile(join(dir, CAPSULE_MANIFEST_NAME), JSON.stringify(manifest, null, 2), 'utf8');
+  return manifest;
 }
 
 async function listFiles(dir: string, base = dir): Promise<Set<string>> {

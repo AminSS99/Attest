@@ -1,0 +1,411 @@
+name: 'Attest release-truth gate'
+description: >-
+  Run Attest's local engine in CI: diff the release candidate against its
+  declarations (and optional reviewer journeys), upload SARIF, write the release
+  delta and blocking contradictions to the step summary, upload the Passport /
+  Evidence Capsule as artifacts, and exit 2 when confirmed contradictions exist.
+  Posts no pull-request comments and publishes no credentials, screenshots, or
+  declaration contents by default.
+branding:
+  icon: shield
+  color: red
+
+inputs:
+  base:
+    description: Path to the last-shipped base artifact (AAB/APK), relative to the workspace.
+    required: true
+  candidate:
+    description: Path to the release candidate artifact (AAB/APK), relative to the workspace.
+    required: true
+  data-safety:
+    description: Optional path to the Data Safety export (JSON or CSV).
+    required: false
+    default: ''
+  privacy-policy:
+    description: Optional path to the privacy policy text.
+    required: false
+    default: ''
+  listing:
+    description: Optional path to the store listing text.
+    required: false
+    default: ''
+  journey:
+    description: Optional comma-separated journey JSON files to include in `check` (JT-001/JT-002).
+    required: false
+    default: ''
+  baseline-journey:
+    description: Optional approved baseline journey for `journey compare` (first changed/failed step in the summary).
+    required: false
+    default: ''
+  candidate-journey:
+    description: Candidate journey for `journey compare` (required when baseline-journey is set).
+    required: false
+    default: ''
+  fail-on:
+    description: >-
+      Gate behavior — `contradictions` (default) exits 2 when confirmed
+      contradictions or a failed journey comparison exist; `never` reports
+      without failing the job.
+    required: false
+    default: 'contradictions'
+  build:
+    description: Build attest from source before running (set false if already built in a prior step).
+    required: false
+    default: 'true'
+  upload-sarif:
+    description: 'Upload results.sarif to GitHub code scanning (requires security-events: write).'
+    required: false
+    default: 'true'
+  upload-artifacts:
+    description: Upload the Passport / Evidence Capsule / findings as workflow artifacts.
+    required: false
+    default: 'true'
+  summary:
+    description: Write the release delta and blocking contradictions to $GITHUB_STEP_SUMMARY.
+    required: false
+    default: 'true'
+  node-version:
+    description: Node.js version used to run attest.
+    required: false
+    default: '22'
+
+outputs:
+  exit-code:
+    description: Final gate result (0 ok/review or reporting-only, 2 confirmed contradictions or failed journey, 1 error).
+    value: ${{ steps.gate.outputs.exit-code }}
+  check-exit-code:
+    description: Exit code of `attest check` (0 ok/review, 2 confirmed contradictions, 1 error).
+    value: ${{ steps.check.outputs.exit-code }}
+  compare-exit-code:
+    description: Exit code of `attest journey compare` (empty when skipped, 0 pass, 2 fail, 1 error).
+    value: ${{ steps.compare.outputs.exit-code }}
+  sarif:
+    description: Absolute path to the SARIF results file.
+    value: ${{ steps.check.outputs.sarif }}
+  out-dir:
+    description: Directory holding check output, capsule, and reports.
+    value: ${{ steps.paths.outputs.out-dir }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve attest source and output paths
+      id: paths
+      shell: bash
+      run: |
+        set -euo pipefail
+        # github.action_path is <workspace>/.github/actions/attest, so the
+        # repository root is three levels up (attest → actions → .github → root).
+        ROOT="$(cd "${{ github.action_path }}/../../.." && pwd)"
+        OUT="${RUNNER_TEMP:-${GITHUB_WORKSPACE}/.attest-tmp}/attest-${GITHUB_RUN_ID:-local}"
+        mkdir -p "$OUT"
+        echo "root=$ROOT" >> "$GITHUB_OUTPUT"
+        echo "out-dir=$OUT" >> "$GITHUB_OUTPUT"
+        echo "cli=$ROOT/packages/cli/dist/src/cli.js" >> "$GITHUB_OUTPUT"
+        if [ ! -f "$ROOT/package.json" ] || [ ! -d "$ROOT/packages/cli" ]; then
+          echo "::error::Attest source not found at $ROOT (expected package.json + packages/cli). Check github.action_path resolution."
+          exit 1
+        fi
+
+    - name: Validate inputs
+      id: validate
+      shell: bash
+      env:
+        BASE: ${{ inputs.base }}
+        CANDIDATE: ${{ inputs.candidate }}
+        DATA_SAFETY: ${{ inputs.data-safety }}
+        PRIVACY_POLICY: ${{ inputs.privacy-policy }}
+        LISTING: ${{ inputs.listing }}
+        JOURNEY: ${{ inputs.journey }}
+        BASELINE_JOURNEY: ${{ inputs.baseline-journey }}
+        CANDIDATE_JOURNEY: ${{ inputs.candidate-journey }}
+        FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        set -euo pipefail
+        fail() { echo "::error::$1"; exit 1; }
+        [ -n "$BASE" ] || fail "input 'base' is required (path to last-shipped AAB/APK)."
+        [ -n "$CANDIDATE" ] || fail "input 'candidate' is required (path to release-candidate AAB/APK)."
+        [ -f "$BASE" ] || fail "base artifact not found: $BASE (relative to $GITHUB_WORKSPACE)."
+        [ -f "$CANDIDATE" ] || fail "candidate artifact not found: $CANDIDATE (relative to $GITHUB_WORKSPACE)."
+        for opt in DATA_SAFETY PRIVACY_POLICY LISTING; do
+          val="${!opt}"
+          if [ -n "$val" ] && [ ! -f "$val" ]; then
+            fail "input '${opt,,}' file not found: $val."
+          fi
+        done
+        if [ -n "$JOURNEY" ]; then
+          IFS=',' read -ra JS <<< "$JOURNEY"
+          for j in "${JS[@]}"; do
+            j="$(echo "$j" | xargs)"
+            [ -n "$j" ] || continue
+            [ -f "$j" ] || fail "journey file not found: $j."
+          done
+        fi
+        if [ -n "$BASELINE_JOURNEY" ] || [ -n "$CANDIDATE_JOURNEY" ]; then
+          [ -n "$BASELINE_JOURNEY" ] || fail "input 'candidate-journey' is set but 'baseline-journey' is missing — both are required for journey compare."
+          [ -n "$CANDIDATE_JOURNEY" ] || fail "input 'baseline-journey' is set but 'candidate-journey' is missing — both are required for journey compare."
+          [ -f "$BASELINE_JOURNEY" ] || fail "baseline-journey file not found: $BASELINE_JOURNEY."
+          [ -f "$CANDIDATE_JOURNEY" ] || fail "candidate-journey file not found: $CANDIDATE_JOURNEY."
+        fi
+        case "${FAIL_ON:-contradictions}" in
+          contradictions|never) ;;
+          *) fail "input 'fail-on' must be 'contradictions' or 'never' (got '$FAIL_ON')." ;;
+        esac
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Build attest
+      if: inputs.build == 'true'
+      shell: bash
+      env:
+        ROOT: ${{ steps.paths.outputs.root }}
+      run: |
+        set -euo pipefail
+        cd "$ROOT"
+        npm ci
+        npm run build
+        if [ ! -f "packages/cli/dist/src/cli.js" ]; then
+          echo "::error::Build finished but packages/cli/dist/src/cli.js is missing."
+          exit 1
+        fi
+
+    - name: Verify CLI present
+      shell: bash
+      env:
+        CLI: ${{ steps.paths.outputs.cli }}
+      run: |
+        set -euo pipefail
+        if [ ! -f "$CLI" ]; then
+          echo "::error::Attest CLI not found at $CLI. Keep inputs.build=true or build the CLI in a prior step."
+          exit 1
+        fi
+        node "$CLI" --help > /dev/null
+
+    - name: attest journey compare
+      id: compare
+      # Run before check so the JSON comparison can feed check + passport.
+      if: inputs.baseline-journey != '' && inputs.candidate-journey != ''
+      shell: bash
+      env:
+        CLI: ${{ steps.paths.outputs.cli }}
+        OUT: ${{ steps.paths.outputs.out-dir }}
+        BASELINE_JOURNEY: ${{ inputs.baseline-journey }}
+        CANDIDATE_JOURNEY: ${{ inputs.candidate-journey }}
+      run: |
+        set -euo pipefail
+        set +e
+        node "$CLI" journey compare \
+          --baseline "$BASELINE_JOURNEY" \
+          --candidate "$CANDIDATE_JOURNEY" \
+          --format text --out "$OUT/journey-comparison.txt" --no-save
+        text_code=$?
+        node "$CLI" journey compare \
+          --baseline "$BASELINE_JOURNEY" \
+          --candidate "$CANDIDATE_JOURNEY" \
+          --format json --out "$OUT/journey-comparison.json" --no-save
+        json_code=$?
+        set -e
+        if [ "$text_code" != "$json_code" ]; then
+          echo "::warning::journey compare text ($text_code) and json ($json_code) exit codes differ; using text."
+        fi
+        echo "exit-code=$text_code" >> "$GITHUB_OUTPUT"
+        if [ "$text_code" = "1" ]; then
+          echo "::error::attest journey compare failed with a usage/runtime error."
+          exit 1
+        fi
+        exit 0
+
+    - name: attest check
+      id: check
+      shell: bash
+      env:
+        CLI: ${{ steps.paths.outputs.cli }}
+        OUT: ${{ steps.paths.outputs.out-dir }}
+        BASE: ${{ inputs.base }}
+        CANDIDATE: ${{ inputs.candidate }}
+        DATA_SAFETY: ${{ inputs.data-safety }}
+        PRIVACY_POLICY: ${{ inputs.privacy-policy }}
+        LISTING: ${{ inputs.listing }}
+        JOURNEY: ${{ inputs.journey }}
+      run: |
+        set -euo pipefail
+        ARGS=(check --base "$BASE" --candidate "$CANDIDATE")
+        [ -n "$DATA_SAFETY" ] && ARGS+=(--data-safety "$DATA_SAFETY")
+        [ -n "$PRIVACY_POLICY" ] && ARGS+=(--privacy-policy "$PRIVACY_POLICY")
+        [ -n "$LISTING" ] && ARGS+=(--listing "$LISTING")
+        [ -n "$JOURNEY" ] && ARGS+=(--journey "$JOURNEY")
+        if [ -f "$OUT/journey-comparison.json" ]; then
+          ARGS+=(--comparison "$OUT/journey-comparison.json")
+        fi
+
+        # Human-readable report for the step summary (includes release delta + contradictions).
+        set +e
+        node "$CLI" "${ARGS[@]}" --format text --out "$OUT/check.txt"
+        text_code=$?
+        set -e
+
+        # SARIF for code scanning — same deterministic findings, separate serialization.
+        set +e
+        node "$CLI" "${ARGS[@]}" --format sarif --out "$OUT/results.sarif"
+        sarif_code=$?
+        set -e
+
+        # Prefer the text run's code; they must agree (same inputs).
+        if [ "$text_code" != "$sarif_code" ]; then
+          echo "::warning::check text ($text_code) and sarif ($sarif_code) exit codes differ; using text."
+        fi
+        echo "exit-code=$text_code" >> "$GITHUB_OUTPUT"
+        echo "sarif=$OUT/results.sarif" >> "$GITHUB_OUTPUT"
+        if [ -f "$OUT/results.sarif" ]; then
+          echo "sarif-created=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "sarif-created=false" >> "$GITHUB_OUTPUT"
+        fi
+
+        if [ "$text_code" = "1" ]; then
+          echo "::error::attest check failed with a usage/runtime error."
+          exit 1
+        fi
+        exit 0
+
+    - name: attest passport (Evidence Capsule)
+      id: passport
+      if: inputs.upload-artifacts == 'true'
+      shell: bash
+      env:
+        CLI: ${{ steps.paths.outputs.cli }}
+        OUT: ${{ steps.paths.outputs.out-dir }}
+        BASE: ${{ inputs.base }}
+        CANDIDATE: ${{ inputs.candidate }}
+        DATA_SAFETY: ${{ inputs.data-safety }}
+        PRIVACY_POLICY: ${{ inputs.privacy-policy }}
+        LISTING: ${{ inputs.listing }}
+        JOURNEY: ${{ inputs.journey }}
+      run: |
+        set -euo pipefail
+        ARGS=(passport --base "$BASE" --candidate "$CANDIDATE" --out "$OUT/capsule")
+        [ -n "$DATA_SAFETY" ] && ARGS+=(--data-safety "$DATA_SAFETY")
+        [ -n "$PRIVACY_POLICY" ] && ARGS+=(--privacy-policy "$PRIVACY_POLICY")
+        [ -n "$LISTING" ] && ARGS+=(--listing "$LISTING")
+        [ -n "$JOURNEY" ] && ARGS+=(--journey "$JOURNEY")
+        if [ -f "$OUT/journey-comparison.json" ]; then
+          ARGS+=(--comparison "$OUT/journey-comparison.json")
+        fi
+        set +e
+        node "$CLI" "${ARGS[@]}"
+        code=$?
+        set -e
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        # 0 = ship/review, 2 = hold (expected); only 1 is a real failure.
+        if [ "$code" = "1" ]; then
+          echo "::error::attest passport failed with a usage/runtime error."
+          exit 1
+        fi
+        exit 0
+
+    - name: Write step summary
+      if: inputs.summary == 'true' && always()
+      shell: bash
+      env:
+        OUT: ${{ steps.paths.outputs.out-dir }}
+        CHECK_CODE: ${{ steps.check.outputs.exit-code }}
+        COMPARE_CODE: ${{ steps.compare.outputs.exit-code }}
+        BASELINE: ${{ inputs.baseline-journey }}
+      run: |
+        set -euo pipefail
+        [ -n "${GITHUB_STEP_SUMMARY:-}" ] || exit 0
+
+        {
+          echo "## Attest release-truth gate"
+          echo ""
+          combined="${CHECK_CODE:-}:${COMPARE_CODE:-}"
+          case "$combined" in
+            2:*|*:2) echo "**Result:** :x: confirmed contradictions between the release candidate and its declarations/review materials." ;;
+            0:|0:0) echo "**Result:** no confirmed contradictions — safe to proceed to human review." ;;
+            *) echo "**Result:** (check not run or failed early)" ;;
+          esac
+          echo ""
+          if [ -f "$OUT/check.txt" ]; then
+            echo "<details><summary>Release delta + findings</summary>"
+            echo ""
+            echo '```'
+            # check.txt holds only the release delta and finding titles/comparisons —
+            # screenshots, credential values, and declaration contents never enter the summary.
+            cat "$OUT/check.txt"
+            echo '```'
+            echo "</details>"
+            echo ""
+          fi
+          if [ -n "$BASELINE" ] && [ -f "$OUT/journey-comparison.txt" ]; then
+            echo "### Journey comparison (first changed / failed step)"
+            echo '```'
+            cat "$OUT/journey-comparison.txt"
+            echo '```'
+            echo ""
+          fi
+          echo "<sub>Passport + Evidence Capsule uploaded as workflow artifacts (screenshots and declaration contents stay out of the summary).</sub>"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload SARIF
+      if: inputs.upload-sarif == 'true' && always() && steps.check.outputs.sarif-created == 'true'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.check.outputs.sarif }}
+
+    - name: Upload Passport / Capsule artifacts
+      if: inputs.upload-artifacts == 'true' && always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: attest-${{ github.run_id }}
+        path: |
+          ${{ steps.paths.outputs.out-dir }}/check.txt
+          ${{ steps.paths.outputs.out-dir }}/results.sarif
+          ${{ steps.paths.outputs.out-dir }}/journey-comparison.txt
+          ${{ steps.paths.outputs.out-dir }}/journey-comparison.json
+          ${{ steps.paths.outputs.out-dir }}/capsule/
+        if-no-files-found: ignore
+
+    - name: Gate
+      id: gate
+      shell: bash
+      env:
+        CHECK_CODE: ${{ steps.check.outputs.exit-code }}
+        COMPARE_CODE: ${{ steps.compare.outputs.exit-code }}
+        FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        set -euo pipefail
+        code=0
+        if [ "${CHECK_CODE:-}" = "1" ]; then
+          echo "exit-code=1" >> "$GITHUB_OUTPUT"
+          exit 1
+        fi
+        if [ "${COMPARE_CODE:-}" = "1" ]; then
+          echo "exit-code=1" >> "$GITHUB_OUTPUT"
+          exit 1
+        fi
+        if [ "${FAIL_ON:-contradictions}" = "never" ]; then
+          echo "fail-on=never — reporting only."
+          if [ "${CHECK_CODE:-0}" = "2" ] || [ "${COMPARE_CODE:-0}" = "2" ]; then
+            code=2
+          else
+            code=0
+          fi
+          # Reporting-only never fails the job, but the output still reflects the finding.
+          echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if [ "${CHECK_CODE:-0}" = "2" ]; then
+          echo "::error::Attest found confirmed contradictions between the build and its declarations/review materials."
+          echo "exit-code=2" >> "$GITHUB_OUTPUT"
+          exit 2
+        fi
+        if [ "${COMPARE_CODE:-0}" = "2" ]; then
+          echo "::error::Attest journey compare failed — the reviewer path no longer matches the approved baseline."
+          echo "exit-code=2" >> "$GITHUB_OUTPUT"
+          exit 2
+        fi
+        echo "exit-code=0" >> "$GITHUB_OUTPUT"
+        exit 0

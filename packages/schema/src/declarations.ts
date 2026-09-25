@@ -75,12 +75,17 @@ export interface DeclaredText {
 
 /**
  * An approved exception (PRODUCT_PLAN §7): a truth gap the team consciously
- * accepts, with an owner and an expiry. Never silent.
+ * accepts, with an owner and an expiry. Never silent. Exceptions overlay the
+ * evidence — they never mutate or erase the finding they cover.
  */
 export interface ExceptionRecord {
   id: string;
-  /** Rule or finding this exception covers. */
+  /** Finding this exception covers — must exist in the Passport's findings. */
+  findingId: string;
+  /** Rule the covered finding belongs to (denormalized for display). */
   covers: string;
+  /** Candidate artifact hash the exception is bound to; invalid on any other build. */
+  artifactSha256: string;
   rationale: string;
   owner: string;
   /** ISO-8601 date after which the exception must be re-reviewed. */

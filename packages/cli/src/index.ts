@@ -12,5 +12,7 @@ export * from './truthgraph.js';
 export * from './sarif.js';
 export * from './passport.js';
 export * from './capsule.js';
+export * from './decision.js';
+export * from './onboarding.js';
 export * from './adb.js';
 export * from './journey.js';

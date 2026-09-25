@@ -7,23 +7,27 @@
 
 import { createHash } from 'node:crypto';
 import { readFile, stat, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 
-import type {
-  DataSafetyDeclaration,
-  DeclaredText,
-  Finding,
-  JourneyComparison,
-  JourneyKind,
+import {
+  RELEASE_PASSPORT_SCHEMA_VERSION,
+  type DataSafetyDeclaration,
+  type DeclaredText,
+  type Finding,
+  type JourneyComparison,
+  type JourneyKind,
+  type ReleasePassport,
 } from 'attest-schema';
 
 import { AdbDevice } from './adb.js';
-import { sealCapsule, verifyCapsule } from './capsule.js';
+import { resealCapsule, sealCapsule, verifyCapsule, CAPSULE_MANIFEST_NAME } from './capsule.js';
 import { importDataSafetyFile } from './datasafety.js';
 import { importDeclaredTextFile } from './declared-text.js';
+import { acceptException, DecisionError, decide, describeDecision } from './decision.js';
 import { diffBuilds } from './diff.js';
+import { doctorProject, formatDoctorReport, initProject } from './onboarding.js';
 import {
   applyComparison,
   compareJourneys,
@@ -38,7 +42,7 @@ import {
   type RecorderIO,
 } from './journey.js';
 import { CLI_VERSION, inspectArtifactFile } from './inspect.js';
-import { buildPassport, renderPassportHtml } from './passport.js';
+import { buildPassport, humanDate, renderPassportHtml } from './passport.js';
 import { toSarif } from './sarif.js';
 import { buildClaims } from './truthgraph.js';
 import { runTruthGapRules, type RuleInput } from './truthgap.js';
@@ -50,6 +54,7 @@ Usage:
   attest diff <base> <candidate> [--out diff.json]
   attest check --base <a> --candidate <b> [--data-safety f.json|f.csv]
                [--privacy-policy f.txt] [--listing f.txt]
+               [--journey j1.json[,j2.json]] [--comparison c.json]
                [--format text|json|sarif] [--out file]
   attest journey record --device <serial> --name <slug> [--title t]
                [--kind reviewer] [--credential-label l] [--credential-expires iso]
@@ -60,11 +65,24 @@ Usage:
                [--out file.html]
   attest passport --base <a> --candidate <b> [declaration flags]
                [--journey j1.json[,j2.json]] [--comparison c.json] --out <dir>
+  attest exception accept --passport <p.json> --finding <F-...>
+               --owner <name> --reason <text> --expires <YYYY-MM-DD>
+               --approved-by <name> [--out <p.json>]
+  attest decide --passport <p.json> --status ship|hold --decided-by <name>
+               [--reason <text>] --out <approved-passport.json>
+  attest seal --passport <p.json> --out <capsule-dir> [--from <capsule-dir>]
   attest verify <capsule-dir>
+  attest init [--dir <project-root>] [--force]
+  attest doctor [--dir <project-root>] [--config <config.json>]
 
 Journeys are human-guided Reviewer Twin recordings (screenshot + step +
 expected/observed state) captured over ADB. Credentials appear as expiring
 references only — secrets never enter evidence.
+
+Exceptions overlay findings without erasing them; Attest's recommendation is
+never changed by an exception or a human decision. Shipping over HOLD requires
+--reason. Finalized decisions are immutable — corrections write a new Passport
+revision via --out.
 
 Artifacts are AAB/APK files, inspected locally. Source code is never required.`;
 
@@ -144,6 +162,177 @@ async function loadComparisons(flags: Map<string, string>): Promise<JourneyCompa
     out.push(JSON.parse(await readFile(p, 'utf8')) as JourneyComparison);
   }
   return out;
+}
+
+async function loadPassport(path: string): Promise<ReleasePassport> {
+  const doc = JSON.parse(await readFile(path, 'utf8')) as ReleasePassport;
+  if (doc.schemaVersion !== RELEASE_PASSPORT_SCHEMA_VERSION) {
+    throw new Error(`Unsupported passport schema "${doc.schemaVersion}" in ${path}.`);
+  }
+  if (!Array.isArray(doc.findings) || !doc.decision || !doc.candidate) {
+    throw new Error(`${path} is not a Release Passport document.`);
+  }
+  return doc;
+}
+
+async function hasCapsuleManifest(dir: string): Promise<boolean> {
+  try {
+    await stat(join(dir, CAPSULE_MANIFEST_NAME));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Persist a decision/exception outcome: write the Passport JSON to `outPath`,
+ * and when the source or destination sits inside a sealed capsule, reseal it
+ * so the new exceptions + decision are covered by the evidence root hash.
+ *
+ * Only a capsule's own `passport.json` is ever resealed. A correction written
+ * to a different filename in the same directory (e.g. `approved-passport.json`
+ * or `rev1.json`) is left as an untracked sidecar — resealing would overwrite
+ * the sealed `passport.json` and destroy the original revision. Use
+ * `attest seal --from <capsule> --passport <rev.json> --out <new-capsule>` to
+ * seal a correction as a new capsule.
+ */
+async function persistPassport(
+  sourcePath: string,
+  outPath: string,
+  passport: ReleasePassport,
+  opts: { updateSource: boolean },
+): Promise<void> {
+  const json = JSON.stringify(passport, null, 2) + '\n';
+  const sourceDir = dirname(sourcePath);
+  const outDir = dirname(outPath);
+  const sameFile = resolve(sourcePath) === resolve(outPath);
+  const sourceIsPassportJson = resolve(sourcePath) === resolve(join(sourceDir, 'passport.json'));
+  const outIsPassportJson = resolve(outPath) === resolve(join(outDir, 'passport.json'));
+  const sourceInCapsule = await hasCapsuleManifest(sourceDir);
+  const outInCapsule = await hasCapsuleManifest(outDir);
+
+  if (opts.updateSource && sourceInCapsule && !sameFile) {
+    await writeFile(sourcePath, json, 'utf8');
+  }
+  await writeFile(outPath, json, 'utf8');
+
+  const resealedDirs = new Set<string>();
+  if (opts.updateSource && sourceInCapsule && sourceIsPassportJson) {
+    await resealCapsule(sourceDir, passport);
+    resealedDirs.add(resolve(sourceDir));
+  }
+  if (outInCapsule && outIsPassportJson && !resealedDirs.has(resolve(outDir))) {
+    await resealCapsule(outDir, passport);
+  }
+}
+
+/** `attest exception accept` — overlay an approved exception on a finding. */
+async function exceptionAccept(flags: Map<string, string>): Promise<number> {
+  const passportPath = flags.get('passport');
+  if (!passportPath) return usage('exception accept requires --passport');
+  for (const req of ['finding', 'owner', 'reason', 'expires', 'approved-by']) {
+    if (!flags.get(req)) return usage(`exception accept requires --${req}`);
+  }
+
+  const passport = await loadPassport(passportPath);
+  try {
+    const next = acceptException(passport, {
+      findingId: flags.get('finding')!,
+      owner: flags.get('owner')!,
+      rationale: flags.get('reason')!,
+      expiresAt: flags.get('expires')!,
+      approvedBy: flags.get('approved-by')!,
+    });
+    const outPath = flags.get('out') ?? passportPath;
+    await persistPassport(passportPath, outPath, next, { updateSource: outPath === passportPath });
+
+    const added = next.exceptions[next.exceptions.length - 1]!;
+    console.log(`Exception ${added.id} accepted for finding ${added.findingId} (${added.covers}).`);
+    console.log(`Finding ${added.findingId} is unchanged — exceptions overlay evidence, never rewrite it.`);
+    console.log(`Exception expires: ${humanDate(added.expiresAt)}`);
+    console.log(
+      `Attest recommendation remains ${next.decision.recommendation.toUpperCase()} — decisions are human, the recommendation is arithmetic.`,
+    );
+    console.log(`Passport ${next.id} written to ${outPath}`);
+    return 0;
+  } catch (err) {
+    if (err instanceof DecisionError) return usage(err.message);
+    throw err;
+  }
+}
+
+/** `attest decide` — record the final human ship/hold decision. */
+async function decideCommand(flags: Map<string, string>): Promise<number> {
+  const passportPath = flags.get('passport');
+  const status = flags.get('status');
+  const outPath = flags.get('out');
+  if (!passportPath) return usage('decide requires --passport');
+  if (status !== 'ship' && status !== 'hold') return usage('decide requires --status ship|hold');
+  if (!flags.get('decided-by')) return usage('decide requires --decided-by');
+  if (!outPath) return usage('decide requires --out <approved-passport.json>');
+
+  const passport = await loadPassport(passportPath);
+  const wasFinalized = passport.decision.status === 'ship' || passport.decision.status === 'hold';
+  const sameFile = resolve(passportPath) === resolve(outPath);
+  if (wasFinalized && sameFile) {
+    return usage(
+      'finalized decisions are immutable; write the corrected Passport to a new file with --out',
+    );
+  }
+
+  try {
+    const next = decide(passport, {
+      status,
+      decidedBy: flags.get('decided-by')!,
+      reason: flags.get('reason'),
+    });
+    // When finalizing a capsule's pending passport, also refresh the source so
+    // the decision is sealed inside the Evidence Capsule. Corrections only
+    // touch --out (the original stays byte-identical).
+    await persistPassport(passportPath, outPath, next, { updateSource: !wasFinalized });
+
+    console.log(`Passport ${next.id}${wasFinalized ? ` (revision ${next.revision}, supersedes ${next.supersedes})` : ''} written to ${outPath}`);
+    for (const line of describeDecision(next)) console.log(line);
+    return next.decision.status === 'ship' ? 0 : 2;
+  } catch (err) {
+    if (err instanceof DecisionError) return usage(err.message);
+    throw err;
+  }
+}
+
+/** `attest seal` — seal a Passport (optionally from an existing capsule) into a capsule dir. */
+async function sealCommand(flags: Map<string, string>): Promise<number> {
+  const passportPath = flags.get('passport');
+  const outDir = flags.get('out');
+  if (!passportPath) return usage('seal requires --passport');
+  if (!outDir) return usage('seal requires --out <capsule-dir>');
+
+  const passport = await loadPassport(passportPath);
+  const html = renderPassportHtml(passport);
+
+  if (flags.has('from')) {
+    const fromDir = flags.get('from')!;
+    if (!(await hasCapsuleManifest(fromDir))) {
+      return usage(`seal --from ${fromDir} is not a sealed capsule (missing ${CAPSULE_MANIFEST_NAME})`);
+    }
+    const { cp } = await import('node:fs/promises');
+    await cp(fromDir, outDir, { recursive: true });
+    await resealCapsule(outDir, passport);
+    console.log(`Evidence Capsule resealed from ${fromDir} to ${outDir} with Passport ${passport.id}.`);
+    return 0;
+  }
+
+  const manifest = await sealCapsule(outDir, {
+    passport,
+    passportHtml: html,
+    sarif: toSarif(passport.findings, passport.candidate.fileName),
+    declarations: {},
+    redactions: [],
+  });
+  console.log(
+    `Evidence Capsule ${manifest.id} sealed to ${outDir} (${manifest.files.length} files, root ${manifest.evidenceRootHash.slice(0, 12)}...)`,
+  );
+  return 0;
 }
 
 /** `attest journey record` — human-guided capture over ADB (PRODUCT_PLAN §6.2). */
@@ -307,7 +496,20 @@ async function main(argv: string[]): Promise<number> {
     case 'check': {
       const input = await buildRuleInput(flags);
       if (!input) return usage('check requires --base and --candidate');
-      const findings = runTruthGapRules(input);
+      const findings = [...runTruthGapRules(input)];
+      const comparisons = await loadComparisons(flags);
+      for (const p of csvPaths(flags.get('journey'))) {
+        const bundle = await loadJourneyBundle(p);
+        const comparison =
+          comparisons.find((c) => c.candidate.id === bundle.journey.id) ?? bundle.comparison;
+        findings.push(
+          ...journeyFindings(
+            comparison ? applyComparison(bundle.journey, comparison) : bundle.journey,
+            comparison,
+          ),
+        );
+      }
+      findings.sort((a, b) => a.id.localeCompare(b.id));
       const format = flags.get('format') ?? 'text';
       const output =
         format === 'json'
@@ -386,6 +588,42 @@ async function main(argv: string[]): Promise<number> {
       if (sub === 'compare') return journeyCompare(flags);
       if (sub === 'instructions') return journeyInstructions(flags);
       return usage('journey requires a subcommand: record, compare, or instructions');
+    }
+
+    case 'exception': {
+      const sub = positional[0];
+      if (sub === 'accept') return exceptionAccept(flags);
+      return usage('exception requires a subcommand: accept');
+    }
+
+    case 'decide':
+      return decideCommand(flags);
+
+    case 'seal':
+      return sealCommand(flags);
+
+    case 'init': {
+      const root = flags.get('dir') ?? '.';
+      const created = await initProject(root, { force: flags.has('force') });
+      if (created.length === 0) {
+        console.log('.attest workspace already exists — nothing to do (use --force to refresh templates).');
+      } else {
+        console.log(`attest init — ${created.length} file(s) created under ${resolve(root)}/.attest:`);
+        for (const f of created) console.log(`  ${f}`);
+        console.log('Next: fill in .attest/declarations/*, place builds under artifacts/, then run `attest doctor`.');
+      }
+      return 0;
+    }
+
+    case 'doctor': {
+      const root = flags.get('dir');
+      const configFlag = flags.get('config');
+      const report = await doctorProject({
+        projectRoot: root ?? (configFlag ? dirname(resolve(configFlag)) : process.cwd()),
+        configPath: configFlag ?? undefined,
+      });
+      console.log(formatDoctorReport(report));
+      return report.ok ? 0 : 1;
     }
 
     case 'verify': {

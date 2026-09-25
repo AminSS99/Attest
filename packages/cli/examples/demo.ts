@@ -103,6 +103,12 @@ function buildRelease(input: RuleInput, bundles: JourneyBundle[]) {
 }
 
 async function main(): Promise<void> {
+  const { rm } = await import('node:fs/promises');
+  // Fresh output each run: journey/capsule ids are content-addressed with
+  // timestamps, so stale ID-named dirs would otherwise linger as EXTRA.
+  await rm(join(OUT, 'capsule'), { recursive: true, force: true });
+  await rm(join(OUT, 'capsule-repaired'), { recursive: true, force: true });
+  await rm(join(OUT, 'capsule-cli'), { recursive: true, force: true });
   await mkdir(JOURNEYS, { recursive: true });
 
   // 1. The two artifacts a team would upload.

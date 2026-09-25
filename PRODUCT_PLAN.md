@@ -313,6 +313,15 @@ The MVP proves the release-delta and evidence workflow. It does not attempt full
 - Five design-partner pilots with real release candidates.
 - Measure time to first useful finding, confirmed contradictions, and findings acted upon.
 
+Status (24 September 2026): local productization complete — exception
+approval with owner/expiry/artifact binding, human ship/hold with override
+reason and immutable revisions, exceptions/decisions sealed in the capsule
+with tamper-evident verify, reusable GitHub Action (ROOT fixed, inputs
+validated, journey-aware, gate-reflecting outputs, SARIF + summary +
+artifacts), `attest init`/`doctor` onboarding, `docs/DESIGN_PARTNER_PILOT.md`
+pilot kit, and CI (build + test + demo + Action smoke). Hosted history
+deferred until two teams voluntarily run Attest for a second release.
+
 ### MVP signature
 
 The demonstration must be unmistakable:

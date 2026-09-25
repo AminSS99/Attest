@@ -1,7 +1,9 @@
 # Attest release-truth gate for pull requests (PRODUCT_PLAN §9 weeks 7–8).
-# Runs the local engine in CI, uploads SARIF to GitHub code scanning, and
-# fails the check when confirmed contradictions exist between the release
-# candidate and its declarations.
+# Uses the reusable action in .github/actions/attest: local engine, SARIF to
+# GitHub code scanning, release delta + blocking contradictions in the step
+# summary, Passport/Capsule as artifacts, exit 2 to block on confirmed
+# contradictions. No PR comments; no credentials, screenshots, or declaration
+# contents are published outside the workflow artifacts.
 
 name: attest
 
@@ -12,6 +14,7 @@ on:
       - 'declarations/**'
 
 permissions:
+  contents: read
   security-events: write
 
 jobs:
@@ -22,37 +25,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Build Attest
-        run: |
-          npm ci
-          npm run build
-
       - name: Build release candidate (your existing Gradle step)
         run: ./gradlew :app:assembleRelease
 
-      - name: Attest check
-        id: attest
-        run: |
-          node packages/cli/dist/src/cli.js check \
-            --base "declarations/last-shipped.apk" \
-            --candidate "app/build/outputs/apk/release/app-release.apk" \
-            --data-safety declarations/data-safety.json \
-            --privacy-policy declarations/privacy-policy.txt \
-            --listing declarations/store-listing.txt \
-            --format sarif --out attest-results.sarif
-
-      - name: Upload SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Attest release-truth gate
+        uses: ./.github/actions/attest
         with:
-          sarif_file: attest-results.sarif
-
-      - name: Gate
-        if: steps.attest.outcome == 'failure'
-        run: |
-          echo "::error::Attest found confirmed contradictions between the build and its declarations."
-          exit 2
+          base: declarations/last-shipped.apk
+          candidate: app/build/outputs/apk/release/app-release.apk
+          data-safety: declarations/data-safety.json
+          privacy-policy: declarations/privacy-policy.txt
+          listing: declarations/store-listing.txt
+          # Optional Reviewer Twin evidence — include recorded journeys in the gate:
+          # journey: journeys/reviewer-premium-ai-1.3.0.json
+          # baseline-journey: journeys/reviewer-premium-ai-1.2.0.json
+          # candidate-journey: journeys/reviewer-premium-ai-1.3.0.json

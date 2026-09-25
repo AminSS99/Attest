@@ -14,6 +14,7 @@ import {
   computeRecommendation,
   materialChangeCount,
   type Claim,
+  type ExceptionRecord,
   type Finding,
   type Journey,
   type JourneySummary,
@@ -21,6 +22,7 @@ import {
 } from 'attest-schema';
 
 import { CLI_VERSION } from './inspect.js';
+import { exceptionStatus } from './decision.js';
 import { credentialReadiness, deriveJourneyResult } from './journey.js';
 import type { RuleInput } from './truthgap.js';
 
@@ -59,6 +61,7 @@ export function buildPassport(
 
   const doc: Omit<ReleasePassport, 'id'> = {
     schemaVersion: RELEASE_PASSPORT_SCHEMA_VERSION,
+    revision: 0,
     app: { packageName: input.candidate.packageName || input.base.packageName },
     base: input.base.artifact,
     candidate: input.candidate.artifact,
@@ -72,8 +75,38 @@ export function buildPassport(
     unresolvedQuestions,
     decision,
   };
-  const id = createHash('sha256').update(JSON.stringify(doc)).digest('hex').slice(0, 24);
-  return { ...doc, id: `RP-${id}` };
+  return { ...doc, id: computePassportId(doc) };
+}
+
+/**
+ * Content-addressed Passport id: sha256 over the document without its `id`
+ * field, truncated. `id` is always the last key so the serialization is stable.
+ */
+export function computePassportId(doc: Omit<ReleasePassport, 'id'>): string {
+  const hash = createHash('sha256').update(JSON.stringify(doc)).digest('hex').slice(0, 24);
+  return `RP-${hash}`;
+}
+
+/** Re-derive the id after exceptions/decision mutate the document. */
+export function recomputePassportId(p: Omit<ReleasePassport, 'id'> | ReleasePassport): ReleasePassport {
+  const { id: _old, ...rest } = p as ReleasePassport;
+  return { ...rest, id: computePassportId(rest) };
+}
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** Human-readable date for Passports: `2026-10-15` → `15 October 2026`. */
+export function humanDate(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (m) return `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]!} ${m[1]}`;
+  const d = new Date(iso);
+  if (!Number.isNaN(d.getTime())) {
+    return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]!} ${d.getUTCFullYear()}`;
+  }
+  return iso;
 }
 
 export function esc(s: string): string {
@@ -132,6 +165,18 @@ function claimRow(c: Claim): string {
 </tr>`;
 }
 
+function exceptionRow(e: ExceptionRecord): string {
+  const status = exceptionStatus(e);
+  return `<tr class="st-${status === 'active' ? 'supported' : 'contradicted'}">
+  <td><code>${esc(e.id)}</code></td>
+  <td><code>${esc(e.findingId)}</code> · <code>${esc(e.covers)}</code></td>
+  <td>${esc(e.owner)}</td>
+  <td>${esc(e.rationale)}</td>
+  <td>${esc(e.approvedBy)}</td>
+  <td>${esc(humanDate(e.expiresAt))}${status === 'expired' ? ' <strong>(EXPIRED)</strong>' : ''}</td>
+</tr>`;
+}
+
 const RESULT_BADGE: Record<string, string> = { pass: 'ship', fail: 'hold', blocked: 'review' };
 
 function journeyCard(j: JourneySummary): string {
@@ -185,6 +230,32 @@ export function renderPassportHtml(p: ReleasePassport): string {
         ? '<span class="badge review">REVIEW</span>'
         : '<span class="badge ship">SHIP</span>';
   const changes = materialChangeCount(p.diff);
+  const d = p.decision;
+  const decided = d.status !== 'pending';
+  const decisionLines: string[] = [
+    `<p><strong>Attest recommendation:</strong> ${badge}</p>`,
+    `<p><strong>Human decision:</strong> <span class="badge ${d.status === 'ship' ? 'ship' : d.status === 'hold' ? 'hold' : 'review'}">${d.status.toUpperCase()}</span></p>`,
+  ];
+  if (decided) {
+    decisionLines.push(
+      `<p><strong>${d.override ? 'Override approved by' : 'Decided by'}:</strong> ${esc(d.decidedBy ?? '')}</p>`,
+    );
+    if (d.reason) decisionLines.push(`<p><strong>Reason:</strong> ${esc(d.reason)}</p>`);
+    if (d.decidedAt) decisionLines.push(`<p class="meta">decided ${esc(d.decidedAt)}</p>`);
+  } else {
+    decisionLines.push(
+      '<p class="meta">A person makes the final call. Attest never certifies approval or legal compliance.</p>',
+    );
+  }
+  decisionLines.push(
+    `<p class="meta">Passport revision ${p.revision}${p.supersedes ? ` · supersedes <code>${esc(p.supersedes)}</code>` : ''}</p>`,
+  );
+  for (const e of p.exceptions) {
+    const expired = exceptionStatus(e) === 'expired';
+    decisionLines.push(
+      `<p><strong>Exception expires:</strong> ${esc(humanDate(e.expiresAt))} <span class="meta">(${esc(e.id)} on ${esc(e.findingId)}${expired ? ' — EXPIRED' : ''})</span></p>`,
+    );
+  }
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -240,8 +311,7 @@ blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
     ${p.diff.packageMismatch ? '<p class="del"><strong>Package name changed between builds.</strong></p>' : ''}
   </div>
   <div class="card"><h2>Decision</h2>
-    <p>Recommendation: ${badge}</p>
-    <p>Status: <strong>${esc(p.decision.status)}</strong> — a human makes the final call. Attest never certifies approval or legal compliance.</p>
+    ${decisionLines.join('\n    ')}
     <h3>Open questions (${p.unresolvedQuestions.length})</h3>
     <ul>${p.unresolvedQuestions.map((q) => `<li>${esc(q)}</li>`).join('')}</ul>
   </div>
@@ -249,6 +319,11 @@ blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
 
 <h2>Truth gaps (${p.findings.length})</h2>
 ${p.findings.length === 0 ? `<p>No truth gaps detected by ruleset ${esc(p.toolset.ruleset)}.</p>` : sortByImpact(p.findings).map(findingCard).join('\n')}
+
+${p.exceptions.length > 0 ? `<h2>Approved exceptions (${p.exceptions.length})</h2>
+<p class="meta">Exceptions overlay the evidence above — findings and the Attest recommendation are never rewritten.</p>
+<table><thead><tr><th>Id</th><th>Finding</th><th>Owner</th><th>Rationale</th><th>Approved by</th><th>Expires</th></tr></thead>
+<tbody>${p.exceptions.map(exceptionRow).join('')}</tbody></table>` : ''}
 
 ${p.journeys.length > 0 ? `<h2>Reviewer Twin journeys (${p.journeys.length})</h2>\n${p.journeys.map(journeyCard).join('\n')}` : ''}
 

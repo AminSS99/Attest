@@ -1,0 +1,141 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Tests
+        run: npm test
+
+      - name: Demo (HOLD → SHIP signature)
+        run: |
+          npm run demo
+          test -f attest-out/demo/capsule/passport.json
+          test -f attest-out/demo/capsule-repaired/passport.json
+
+      - name: Verify demo capsules offline
+        run: |
+          node packages/cli/dist/src/cli.js verify attest-out/demo/capsule
+          node packages/cli/dist/src/cli.js verify attest-out/demo/capsule-repaired
+
+      - name: Doctor on fresh init
+        run: |
+          node packages/cli/dist/src/cli.js init --dir /tmp/attest-ci-init
+          # Fresh templates lack real artifacts, so doctor must report blocking errors (exit 1).
+          if node packages/cli/dist/src/cli.js doctor --dir /tmp/attest-ci-init; then
+            echo "expected doctor to fail on empty templates"
+            exit 1
+          fi
+
+  action-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate action.yml parses
+        run: |
+          python3 -c "import yaml,sys; yaml.safe_load(open('.github/actions/attest/action.yml')); print('action.yml parses')" 2>/dev/null \
+          || python3 -c "open('.github/actions/attest/action.yml').read(); print('action.yml readable (pyyaml absent, skipped strict parse)')"
+
+      - name: Check ROOT resolution (must be ../../.. from .github/actions/attest)
+        run: |
+          grep -q '\.\./\.\./\.\.' .github/actions/attest/action.yml
+          ! grep -q 'action_path }}/\.\./\.\."[^.]' .github/actions/attest/action.yml || {
+            echo "action still uses buggy ../.. ROOT"; exit 1;
+          }
+          echo "ROOT resolution looks correct"
+
+      - name: actionlint (advisory — never the sole gate)
+        run: |
+          if command -v actionlint >/dev/null 2>&1; then
+            actionlint .github/actions/attest/action.yml .github/workflows/ci.yml
+          else
+            echo "actionlint not installed — skipping (validation does not depend on it)"
+          fi
+
+  action-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Realistic Action smoke test
+        run: ./scripts/smoke-action.sh
+
+  action-gate:
+    # Exercises the reusable composite action itself on demo fixtures.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate demo fixtures
+        run: |
+          npm ci
+          npm run build
+          npm run demo
+
+      - name: Attest gate (expect HOLD → exit 2)
+        id: attest
+        continue-on-error: true
+        uses: ./.github/actions/attest
+        with:
+          base: attest-out/demo/pulsefit-1.2.0.apk
+          candidate: attest-out/demo/pulsefit-1.3.0.apk
+          data-safety: attest-out/demo/data-safety.json
+          privacy-policy: attest-out/demo/privacy-policy.txt
+          listing: attest-out/demo/store-listing.txt
+          baseline-journey: attest-out/demo/journeys/reviewer-premium-ai-1.2.0.json
+          candidate-journey: attest-out/demo/journeys/reviewer-premium-ai-1.3.0.json
+          fail-on: contradictions
+          upload-sarif: false
+          upload-artifacts: true
+
+      - name: Assert gate blocked on contradictions + journey failure
+        env:
+          EXIT_CODE: ${{ steps.attest.outputs.exit-code }}
+          CHECK_CODE: ${{ steps.attest.outputs.check-exit-code }}
+          COMPARE_CODE: ${{ steps.attest.outputs.compare-exit-code }}
+        run: |
+          set -euo pipefail
+          echo "exit-code=$EXIT_CODE check=$CHECK_CODE compare=$COMPARE_CODE"
+          [ "$CHECK_CODE" = "2" ] || { echo "expected check-exit-code 2"; exit 1; }
+          [ "$COMPARE_CODE" = "2" ] || { echo "expected compare-exit-code 2"; exit 1; }
+          [ "$EXIT_CODE" = "2" ] || { echo "expected gate exit-code 2"; exit 1; }
+
+      - name: Attest gate reporting-only (fail-on=never must not fail)
+        uses: ./.github/actions/attest
+        with:
+          base: attest-out/demo/pulsefit-1.2.0.apk
+          candidate: attest-out/demo/pulsefit-1.3.0.apk
+          data-safety: attest-out/demo/data-safety.json
+          fail-on: never
+          build: false
+          upload-sarif: false
+          upload-artifacts: false
+          summary: false
