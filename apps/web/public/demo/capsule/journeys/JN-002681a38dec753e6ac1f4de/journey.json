@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "attest.journey/1",
+  "name": "reviewer-premium-ai-1.3.0",
+  "kind": "reviewer",
+  "title": "Reviewer reaches premium AI feature",
+  "artifactSha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
+  "device": {
+    "serial": "emulator-5554",
+    "manufacturer": "Google",
+    "model": "sdk_gphone64_x86_64",
+    "androidRelease": "14",
+    "apiLevel": 34
+  },
+  "steps": [
+    {
+      "order": 1,
+      "action": "Launch PulseFit from a fresh install",
+      "expectedState": "PulseFit home screen with the \"Start workout\" button visible",
+      "observedState": "Home screen shown with \"Start workout\"",
+      "status": "pass",
+      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "activity": "app.pulsefit.MainActivity",
+      "screenshot": {
+        "path": "reviewer-premium-ai-1.3.0/step-001.png",
+        "sha256": "d2804e71a82ccab0487225a50aae508d105830cd97d8c0b7bf3c86b5b22c91ec"
+      },
+      "note": "Fresh install; reviewer account not yet signed in",
+      "evidencePaths": [
+        "reviewer-premium-ai-1.3.0/step-001.png"
+      ]
+    },
+    {
+      "order": 2,
+      "action": "Sign in with the reviewer account",
+      "expectedState": "Workout dashboard for the signed-in reviewer",
+      "observedState": "Dashboard shown for reviewer account",
+      "status": "pass",
+      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "activity": "app.pulsefit.MainActivity",
+      "screenshot": {
+        "path": "reviewer-premium-ai-1.3.0/step-002.png",
+        "sha256": "8f72ed3a27ca10eec7a6c9870d168fb2e771f9462002d7962bff6b0fdc62f925"
+      },
+      "evidencePaths": [
+        "reviewer-premium-ai-1.3.0/step-002.png"
+      ]
+    },
+    {
+      "order": 3,
+      "action": "Open Settings from the profile menu",
+      "expectedState": "Settings screen with Account, Privacy, and Premium AI entries",
+      "observedState": "Settings screen open (app.pulsefit.SettingsActivity)",
+      "status": "pass",
+      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "activity": "app.pulsefit.SettingsActivity",
+      "screenshot": {
+        "path": "reviewer-premium-ai-1.3.0/step-003.png",
+        "sha256": "bc0c02e6bbeab1d543c4920de8cb8944e78f86a7b9d9df93c28813c2fa4550ae"
+      },
+      "evidencePaths": [
+        "reviewer-premium-ai-1.3.0/step-003.png"
+      ]
+    },
+    {
+      "order": 4,
+      "action": "Tap \"Premium AI Coach\"",
+      "expectedState": "Premium AI Coach screen with the plan selector visible",
+      "observedState": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change",
+      "status": "fail",
+      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "activity": "app.pulsefit.MainActivity",
+      "screenshot": {
+        "path": "reviewer-premium-ai-1.3.0/step-004.png",
+        "sha256": "7c43e1b4ca647e09ad92bad07e7a5700920530a96df4fd828be03b861233e49a"
+      },
+      "note": "Feature gate now depends on the metrics sync added in 1.3; reviewer path blocked",
+      "evidencePaths": [
+        "reviewer-premium-ai-1.3.0/step-004.png"
+      ]
+    }
+  ],
+  "credentialRef": {
+    "label": "Reviewer account pulsefit.reviewer@attest.example — password + TOTP in team vault (ref only)",
+    "expiresAt": "2027-01-15T00:00:00.000Z"
+  },
+  "recordedBy": "human-guided",
+  "recordedAt": "2026-09-25T09:07:18.568Z",
+  "lastRunAt": "2026-09-25T09:07:18.569Z",
+  "lastRunResult": "fail",
+  "id": "JN-002681a38dec753e6ac1f4de",
+  "firstChangedStep": 4
+}

@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "attest.journey-comparison/1",
+  "baseline": {
+    "id": "JN-5d8f98a4b40a3c1f5bad8bd1",
+    "title": "Reviewer reaches premium AI feature",
+    "recordedAt": "2026-09-25T09:07:18.566Z",
+    "artifactSha256": "7068eacb9f82d00d361ba216cf6e62a9dd9f062d983412c3aba5000f8a4f7bae"
+  },
+  "candidate": {
+    "id": "JN-002681a38dec753e6ac1f4de",
+    "title": "Reviewer reaches premium AI feature",
+    "recordedAt": "2026-09-25T09:07:18.568Z",
+    "artifactSha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d"
+  },
+  "steps": [
+    {
+      "order": 1,
+      "action": "Launch PulseFit from a fresh install",
+      "baseline": {
+        "status": "pass",
+        "expectedState": "PulseFit home screen with the \"Start workout\" button visible",
+        "observedState": "Home screen shown with \"Start workout\"",
+        "activity": "app.pulsefit.MainActivity"
+      },
+      "candidate": {
+        "status": "pass",
+        "expectedState": "PulseFit home screen with the \"Start workout\" button visible",
+        "observedState": "Home screen shown with \"Start workout\"",
+        "activity": "app.pulsefit.MainActivity"
+      },
+      "change": "unchanged",
+      "reason": "Action, expected visible result, and status match the approved baseline."
+    },
+    {
+      "order": 2,
+      "action": "Sign in with the reviewer account",
+      "baseline": {
+        "status": "pass",
+        "expectedState": "Workout dashboard for the signed-in reviewer",
+        "observedState": "Dashboard shown for reviewer account",
+        "activity": "app.pulsefit.MainActivity"
+      },
+      "candidate": {
+        "status": "pass",
+        "expectedState": "Workout dashboard for the signed-in reviewer",
+        "observedState": "Dashboard shown for reviewer account",
+        "activity": "app.pulsefit.MainActivity"
+      },
+      "change": "unchanged",
+      "reason": "Action, expected visible result, and status match the approved baseline."
+    },
+    {
+      "order": 3,
+      "action": "Open Settings from the profile menu",
+      "baseline": {
+        "status": "pass",
+        "expectedState": "Settings screen with Account, Privacy, and Premium AI entries",
+        "observedState": "Settings screen open (app.pulsefit.SettingsActivity)",
+        "activity": "app.pulsefit.SettingsActivity"
+      },
+      "candidate": {
+        "status": "pass",
+        "expectedState": "Settings screen with Account, Privacy, and Premium AI entries",
+        "observedState": "Settings screen open (app.pulsefit.SettingsActivity)",
+        "activity": "app.pulsefit.SettingsActivity"
+      },
+      "change": "unchanged",
+      "reason": "Action, expected visible result, and status match the approved baseline."
+    },
+    {
+      "order": 4,
+      "action": "Tap \"Premium AI Coach\"",
+      "baseline": {
+        "status": "pass",
+        "expectedState": "Premium AI Coach screen with the plan selector visible",
+        "observedState": "Premium AI Coach screen open (app.pulsefit.PremiumAiActivity)",
+        "activity": "app.pulsefit.PremiumAiActivity"
+      },
+      "candidate": {
+        "status": "fail",
+        "expectedState": "Premium AI Coach screen with the plan selector visible",
+        "observedState": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change",
+        "activity": "app.pulsefit.MainActivity"
+      },
+      "change": "failed",
+      "reason": "Candidate step 4 failed: expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\"."
+    },
+    {
+      "order": 5,
+      "action": "Start a guided run and stop it after 10 seconds",
+      "change": "missing",
+      "baseline": {
+        "status": "pass",
+        "expectedState": "Workout summary with recorded distance and duration",
+        "observedState": "Workout summary shown",
+        "activity": "app.pulsefit.MainActivity"
+      },
+      "reason": "Step 5 exists in the approved baseline but was never reached in the candidate run."
+    }
+  ],
+  "result": "fail",
+  "firstChangedStep": 4,
+  "firstFailedStep": 4,
+  "summary": "FAILED at step 4 of 5: Candidate step 4 failed: expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\".",
+  "comparedAt": "2026-09-25T09:07:18.569Z",
+  "id": "JC-f7515b101b6f2ac2445b287d"
+}

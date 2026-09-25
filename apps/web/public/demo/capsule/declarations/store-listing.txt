@@ -1,0 +1,4 @@
+PulseFit — GPS Workout Tracker
+
+Track runs and rides with precise GPS. Record voice notes mid-workout.
+Your data stays yours.

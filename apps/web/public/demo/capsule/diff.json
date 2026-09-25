@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "attest.release-diff/1",
+  "base": {
+    "fileName": "pulsefit-1.2.0.apk",
+    "sha256": "7068eacb9f82d00d361ba216cf6e62a9dd9f062d983412c3aba5000f8a4f7bae",
+    "sizeBytes": 1066,
+    "kind": "apk",
+    "packageName": "app.pulsefit",
+    "versionName": "1.2.0",
+    "versionCode": "10200"
+  },
+  "candidate": {
+    "fileName": "pulsefit-1.3.0.apk",
+    "sha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
+    "sizeBytes": 1149,
+    "kind": "apk",
+    "packageName": "app.pulsefit",
+    "versionName": "1.3.0",
+    "versionCode": "10300"
+  },
+  "addedPermissions": [
+    "android.permission.CAMERA"
+  ],
+  "removedPermissions": [
+    "android.permission.RECORD_AUDIO"
+  ],
+  "addedSdks": [
+    {
+      "id": "com.amplitude",
+      "vendor": "Amplitude",
+      "name": "Amplitude Analytics",
+      "matchedPackages": [
+        "com/amplitude"
+      ]
+    }
+  ],
+  "removedSdks": [],
+  "addedDomains": [
+    "metrics.amplitude.com"
+  ],
+  "removedDomains": [],
+  "addedExportedComponents": [
+    {
+      "kind": "receiver",
+      "name": "app.pulsefit.DeepLinkReceiver",
+      "exported": true,
+      "exportedImplicitly": false,
+      "actions": [
+        "android.intent.action.VIEW"
+      ]
+    }
+  ],
+  "removedExportedComponents": [],
+  "packageMismatch": false,
+  "createdAt": "2026-09-25T09:07:18.564Z"
+}

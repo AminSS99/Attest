@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8f8f4" />
+    <meta name="description" content="Run Attest locally and inspect the synthetic PulseFit release example." />
+    <title>Local guide — Attest</title>
+    <link rel="icon" type="image/svg+xml" href="/attest-mark.svg" />
+    <link rel="stylesheet" href="/styles.css?v=2" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header wrap"><a class="brand" href="/" aria-label="Attest home"><img class="brand-mark" src="/attest-mark.svg" alt="" width="30" height="30" /><span>Attest</span></a><nav aria-label="Main navigation"><a href="/">Overview</a><a href="/demo/passport.html">Demo Passport <span aria-hidden="true">↗</span></a></nav></header>
+    <main id="main" class="guide-main wrap">
+      <span class="section-index">LOCAL GUIDE / ANDROID CORE</span>
+      <h1>From two builds to a release decision.</h1>
+      <p class="guide-intro">Attest is an open-source CLI you can <a href="https://github.com/AminSS99/Attest">get from GitHub</a>. It runs locally, inspects Android APKs or AABs, and generates evidence you can keep and verify offline. It is not yet a published npm package.</p>
+      <div class="guide-layout">
+        <nav class="guide-nav" aria-label="Guide sections"><a href="#start">Start here</a><a href="#demo">Synthetic demo</a><a href="#own-builds">Your builds</a><a href="#reviewer-twin">Reviewer Twin</a><a href="#decision">Human decision</a></nav>
+        <div class="guide-content">
+          <section id="start"><h2>Start here</h2><p>Use Node.js 20 or later. Clone the <a href="https://github.com/AminSS99/Attest">public repository</a>, then run:</p><pre><code>git clone https://github.com/AminSS99/Attest.git
+cd Attest
+npm ci
+npm run build
+npm test</code></pre><p>Initialize a reviewable workspace with <code>node packages/cli/dist/src/cli.js init</code>, then run <code>node packages/cli/dist/src/cli.js doctor</code> to check paths and optional ADB setup. The CLI command is shown explicitly because the package has not been published.</p></section>
+          <section id="demo"><h2>Run the synthetic PulseFit demo</h2><pre><code>npm run demo
+node packages/cli/dist/src/cli.js verify attest-out/demo/capsule</code></pre><p>The demo creates a HOLD Passport for PulseFit 1.2.0 → 1.3.0, then a repaired SHIP example. Its APKs, declarations, journey, and screenshots are synthetic fixtures. <a href="/demo/passport.html">Read the generated HOLD Passport</a> or <a href="/demo/capsule/capsule-manifest.json">inspect the sealed Capsule’s manifest</a>.</p></section>
+          <section id="own-builds"><h2>Compare your own Android builds</h2><p>Point the CLI at the last shipped and candidate APK or AAB. Supply the current declarations; Attest reports exact changed facts and source-linked truth gaps.</p><pre><code>node packages/cli/dist/src/cli.js check \
+  --base last-shipped.apk \
+  --candidate candidate.apk \
+  --data-safety data-safety.json \
+  --privacy-policy privacy.txt \
+  --listing listing.txt</code></pre><p>A “truth gap” means the build evidence and supplied release materials disagree, or a claim has no supporting build evidence. The current core contains five Android truth-gap rules.</p></section>
+          <section id="reviewer-twin"><h2>Record a Reviewer Twin</h2><p>A person performs each step on an Android device over ADB. Attest captures the step, expected and observed result, foreground activity, and screenshot hash. Compare the candidate run with an approved baseline.</p><pre><code>node packages/cli/dist/src/cli.js journey record \
+  --device emulator-5554 \
+  --name reviewer-premium-ai \
+  --title "Reviewer reaches premium AI feature"
+
+node packages/cli/dist/src/cli.js journey compare \
+  --baseline journeys/approved.json \
+  --candidate journeys/candidate.json</code></pre><p>Credential labels and expiry can be recorded; secrets should stay in your vault and are not stored in the journey.</p></section>
+          <section id="decision"><h2>Generate and seal the decision record</h2><pre><code>node packages/cli/dist/src/cli.js passport \
+  --base last-shipped.apk \
+  --candidate candidate.apk \
+  --data-safety data-safety.json \
+  --journey journeys/candidate.json \
+  --out evidence/
+
+node packages/cli/dist/src/cli.js verify evidence/</code></pre><p>The Passport recommends SHIP, REVIEW, or HOLD. A release owner records the final ship or hold decision with <code>decide</code>; shipping over HOLD or REVIEW requires a reason. The Capsule seals evidence hashes so the record can be verified offline. The full command reference and CI Action usage are in the repository README.</p></section>
+        </div>
+      </div>
+    </main>
+    <footer class="site-footer wrap"><a class="brand" href="/" aria-label="Attest home"><img class="brand-mark" src="/attest-mark.svg" alt="" width="30" height="30" /><span>Attest</span></a><p>Evidence-backed release readiness for Android.</p><a href="/">Back to overview ↑</a></footer>
+  </body>
+</html>

@@ -1,0 +1,1000 @@
+{
+  "schemaVersion": "attest.release-passport/1",
+  "revision": 0,
+  "app": {
+    "packageName": "app.pulsefit"
+  },
+  "base": {
+    "fileName": "pulsefit-1.2.0.apk",
+    "sha256": "7068eacb9f82d00d361ba216cf6e62a9dd9f062d983412c3aba5000f8a4f7bae",
+    "sizeBytes": 1066,
+    "kind": "apk",
+    "packageName": "app.pulsefit",
+    "versionName": "1.2.0",
+    "versionCode": "10200"
+  },
+  "candidate": {
+    "fileName": "pulsefit-1.3.0.apk",
+    "sha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
+    "sizeBytes": 1149,
+    "kind": "apk",
+    "packageName": "app.pulsefit",
+    "versionName": "1.3.0",
+    "versionCode": "10300"
+  },
+  "createdAt": "2026-09-25T09:07:18.570Z",
+  "toolset": {
+    "cli": "0.1.0",
+    "ruleset": "core-truth-gap/2026.09"
+  },
+  "diff": {
+    "schemaVersion": "attest.release-diff/1",
+    "base": {
+      "fileName": "pulsefit-1.2.0.apk",
+      "sha256": "7068eacb9f82d00d361ba216cf6e62a9dd9f062d983412c3aba5000f8a4f7bae",
+      "sizeBytes": 1066,
+      "kind": "apk",
+      "packageName": "app.pulsefit",
+      "versionName": "1.2.0",
+      "versionCode": "10200"
+    },
+    "candidate": {
+      "fileName": "pulsefit-1.3.0.apk",
+      "sha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
+      "sizeBytes": 1149,
+      "kind": "apk",
+      "packageName": "app.pulsefit",
+      "versionName": "1.3.0",
+      "versionCode": "10300"
+    },
+    "addedPermissions": [
+      "android.permission.CAMERA"
+    ],
+    "removedPermissions": [
+      "android.permission.RECORD_AUDIO"
+    ],
+    "addedSdks": [
+      {
+        "id": "com.amplitude",
+        "vendor": "Amplitude",
+        "name": "Amplitude Analytics",
+        "matchedPackages": [
+          "com/amplitude"
+        ]
+      }
+    ],
+    "removedSdks": [],
+    "addedDomains": [
+      "metrics.amplitude.com"
+    ],
+    "removedDomains": [],
+    "addedExportedComponents": [
+      {
+        "kind": "receiver",
+        "name": "app.pulsefit.DeepLinkReceiver",
+        "exported": true,
+        "exportedImplicitly": false,
+        "actions": [
+          "android.intent.action.VIEW"
+        ]
+      }
+    ],
+    "removedExportedComponents": [],
+    "packageMismatch": false,
+    "createdAt": "2026-09-25T09:07:18.564Z"
+  },
+  "claims": [
+    {
+      "id": "data-type:android.permission.CAMERA",
+      "kind": "data_type",
+      "text": "android.permission.CAMERA",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "data-type:android.permission.RECORD_AUDIO",
+      "kind": "data_type",
+      "text": "android.permission.RECORD_AUDIO",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "data-type:audio.voice_or_sound_recordings",
+      "kind": "data_type",
+      "text": "We collect audio.voice_or_sound_recordings",
+      "supporting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]"
+        }
+      ],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "data-type:calendar.calendar_events",
+      "kind": "data_type",
+      "text": "We collect calendar.calendar_events",
+      "supporting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]"
+        }
+      ],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission (absent in base and candidate)"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "unsupported"
+    },
+    {
+      "id": "data-type:com.amplitude",
+      "kind": "data_type",
+      "text": "com.amplitude",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:sdkDisclosures",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/amplitude"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"Amplitude Analytics\" or \"Amplitude\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "data-type:location.precise_location",
+      "kind": "data_type",
+      "text": "We collect location.precise_location",
+      "supporting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"location.precise_location\"]",
+          "excerpt": "Workout tracking"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.ACCESS_FINE_LOCATION"
+        }
+      ],
+      "conflicting": [],
+      "bestEvidence": "observed",
+      "status": "supported"
+    },
+    {
+      "id": "data-type:metrics.amplitude.com",
+      "kind": "data_type",
+      "text": "metrics.amplitude.com",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:domains",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://metrics.amplitude.com"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"metrics.amplitude.com\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "data-type:photos_and_videos.photos",
+      "kind": "data_type",
+      "text": "We collect photos_and_videos.photos",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "domain:android.permission.CAMERA",
+      "kind": "domain",
+      "text": "android.permission.CAMERA",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "domain:android.permission.RECORD_AUDIO",
+      "kind": "domain",
+      "text": "android.permission.RECORD_AUDIO",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "domain:api.pulsefit.app",
+      "kind": "domain",
+      "text": "The app contacts api.pulsefit.app",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://api.pulsefit.app"
+        }
+      ],
+      "conflicting": [],
+      "bestEvidence": "observed",
+      "status": "supported"
+    },
+    {
+      "id": "domain:calendar.calendar_events",
+      "kind": "domain",
+      "text": "calendar.calendar_events",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission (absent in base and candidate)"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "unsupported"
+    },
+    {
+      "id": "domain:com.amplitude",
+      "kind": "domain",
+      "text": "com.amplitude",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:sdkDisclosures",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/amplitude"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"Amplitude Analytics\" or \"Amplitude\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "domain:metrics.amplitude.com",
+      "kind": "domain",
+      "text": "The app contacts metrics.amplitude.com",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://metrics.amplitude.com"
+        }
+      ],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:domains",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://metrics.amplitude.com"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"metrics.amplitude.com\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "permission:android.permission.ACCESS_FINE_LOCATION",
+      "kind": "permission",
+      "text": "The app can access precise location",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.ACCESS_FINE_LOCATION"
+        }
+      ],
+      "conflicting": [],
+      "bestEvidence": "observed",
+      "status": "supported"
+    },
+    {
+      "id": "permission:android.permission.CAMERA",
+      "kind": "permission",
+      "text": "The app can access camera (photos)",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "permission:android.permission.INTERNET",
+      "kind": "permission",
+      "text": "The app requests android.permission.INTERNET",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.INTERNET"
+        }
+      ],
+      "conflicting": [],
+      "bestEvidence": "observed",
+      "status": "supported"
+    },
+    {
+      "id": "permission:android.permission.RECORD_AUDIO",
+      "kind": "permission",
+      "text": "android.permission.RECORD_AUDIO",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "permission:calendar.calendar_events",
+      "kind": "permission",
+      "text": "calendar.calendar_events",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission (absent in base and candidate)"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "unsupported"
+    },
+    {
+      "id": "permission:com.amplitude",
+      "kind": "permission",
+      "text": "com.amplitude",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:sdkDisclosures",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/amplitude"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"Amplitude Analytics\" or \"Amplitude\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "permission:metrics.amplitude.com",
+      "kind": "permission",
+      "text": "metrics.amplitude.com",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:domains",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://metrics.amplitude.com"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"metrics.amplitude.com\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "sdk:android.permission.CAMERA",
+      "kind": "sdk",
+      "text": "android.permission.CAMERA",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "sdk:android.permission.RECORD_AUDIO",
+      "kind": "sdk",
+      "text": "android.permission.RECORD_AUDIO",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "sdk:calendar.calendar_events",
+      "kind": "sdk",
+      "text": "calendar.calendar_events",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission (absent in base and candidate)"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "unsupported"
+    },
+    {
+      "id": "sdk:com.amplitude",
+      "kind": "sdk",
+      "text": "The app embeds Amplitude Analytics",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/amplitude"
+        }
+      ],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:sdkDisclosures",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/amplitude"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"Amplitude Analytics\" or \"Amplitude\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    },
+    {
+      "id": "sdk:com.google.firebase.analytics",
+      "kind": "sdk",
+      "text": "The app embeds Firebase Analytics",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/google/firebase/analytics"
+        }
+      ],
+      "conflicting": [],
+      "bestEvidence": "observed",
+      "status": "supported"
+    },
+    {
+      "id": "sdk:com.google.firebase.core",
+      "kind": "sdk",
+      "text": "The app embeds Firebase Core",
+      "supporting": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/google/firebase"
+        }
+      ],
+      "conflicting": [],
+      "bestEvidence": "observed",
+      "status": "supported"
+    },
+    {
+      "id": "sdk:metrics.amplitude.com",
+      "kind": "sdk",
+      "text": "metrics.amplitude.com",
+      "supporting": [],
+      "conflicting": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:domains",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://metrics.amplitude.com"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"metrics.amplitude.com\")"
+        }
+      ],
+      "bestEvidence": "observed",
+      "status": "contradicted"
+    }
+  ],
+  "findings": [
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-11549d6603e766d1",
+      "ruleId": "TG-005",
+      "title": "Removed permission still declared in Data Safety",
+      "severity": "medium",
+      "state": "changed_requires_review",
+      "subject": "android.permission.RECORD_AUDIO",
+      "summary": "android.permission.RECORD_AUDIO was removed between pulsefit-1.2.0.apk and pulsefit-1.3.0.apk, but the Data Safety form still declares \"audio.voice_or_sound_recordings\". The store surface has drifted from the product.",
+      "comparison": "removedPermissions contains android.permission.RECORD_AUDIO; declared(collectedDataTypes still contains \"audio.voice_or_sound_recordings\")",
+      "sources": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+        },
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+          "excerpt": "play-console-export (stale)"
+        }
+      ],
+      "remediation": "Re-answer the affected Data Safety questions for this release so the form stops over-claiming."
+    },
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-13539850c5646f12",
+      "ruleId": "TG-003",
+      "title": "New network destination not disclosed",
+      "severity": "high",
+      "state": "changed_requires_review",
+      "subject": "metrics.amplitude.com",
+      "summary": "New network destination metrics.amplitude.com appears in the candidate build and is disclosed in neither the Data Safety destinations nor the privacy policy.",
+      "comparison": "observed(metrics.amplitude.com) vs declared(destination not listed)",
+      "sources": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:url https://metrics.amplitude.com"
+        },
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:domains",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"metrics.amplitude.com\")"
+        }
+      ],
+      "remediation": "Confirm what data flows to this destination and disclose it, or remove the integration that introduced it."
+    },
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-395fc6f5205bb2db",
+      "ruleId": "TG-004",
+      "title": "Declared data type has no supporting build evidence",
+      "severity": "medium",
+      "state": "evidence_missing",
+      "subject": "calendar.calendar_events",
+      "summary": "Data Safety declares collection of \"calendar.calendar_events\", but neither the base nor the candidate build contains android.permission.READ_CALENDAR or android.permission.WRITE_CALENDAR. The claim currently rests on nothing observable.",
+      "comparison": "declared(\"calendar.calendar_events\") vs observed(no android.permission.READ_CALENDAR|android.permission.WRITE_CALENDAR in either build)",
+      "sources": [
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission (absent in base and candidate)"
+        }
+      ],
+      "remediation": "Confirm the collection path and attach evidence, or narrow the Data Safety declaration."
+    },
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-594f69a48b5990e1",
+      "ruleId": "TG-002",
+      "title": "New third-party SDK without any disclosure",
+      "severity": "high",
+      "state": "confirmed_contradiction",
+      "subject": "com.amplitude",
+      "summary": "New SDK Amplitude Analytics (Amplitude) is present in the build but disclosed nowhere the team has declared.",
+      "comparison": "observed(com.amplitude via com/amplitude) vs declared(no Data Safety disclosure, no privacy-policy mention)",
+      "sources": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "dex:packages com/amplitude"
+        },
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:sdkDisclosures",
+          "excerpt": "play-console-export (stale)"
+        },
+        {
+          "kind": "privacy_policy",
+          "evidenceClass": "declared",
+          "ref": "privacy-policy (no mention of \"Amplitude Analytics\" or \"Amplitude\")"
+        }
+      ],
+      "remediation": "Disclose the SDK and its data practices in the Data Safety form and privacy policy, or remove it from the build."
+    },
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-69cb7b1c5b657a23",
+      "ruleId": "JT-001",
+      "title": "Reviewer journey failed at a recorded step",
+      "severity": "high",
+      "state": "confirmed_contradiction",
+      "subject": "reviewer-premium-ai-1.3.0",
+      "summary": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.",
+      "comparison": "approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)",
+      "sources": [
+        {
+          "kind": "journey",
+          "evidenceClass": "observed",
+          "ref": "JN-002681a38dec753e6ac1f4de#step-4",
+          "excerpt": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change"
+        },
+        {
+          "kind": "journey",
+          "evidenceClass": "attested",
+          "ref": "JN-5d8f98a4b40a3c1f5bad8bd1#step-4:expected",
+          "excerpt": "Premium AI Coach screen with the plan selector visible"
+        },
+        {
+          "kind": "journey",
+          "evidenceClass": "observed",
+          "ref": "JC-f7515b101b6f2ac2445b287d",
+          "excerpt": "FAILED at step 4 of 5: Candidate step 4 failed: expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\"."
+        }
+      ],
+      "remediation": "Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
+    },
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-7716dd7492743738",
+      "ruleId": "TG-001",
+      "title": "New dangerous permission not covered by Data Safety answers",
+      "severity": "high",
+      "state": "confirmed_contradiction",
+      "subject": "android.permission.CAMERA",
+      "summary": "Build declares android.permission.CAMERA (Camera (photos)), but the Data Safety form does not list \"photos_and_videos.photos\". One of them is wrong.",
+      "comparison": "observed(android.permission.CAMERA) vs declared(collectedDataTypes missing \"photos_and_videos.photos\")",
+      "sources": [
+        {
+          "kind": "build_fact",
+          "evidenceClass": "observed",
+          "ref": "manifest:uses-permission android.permission.CAMERA"
+        },
+        {
+          "kind": "data_safety",
+          "evidenceClass": "declared",
+          "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+          "excerpt": "play-console-export (stale)"
+        }
+      ],
+      "remediation": "Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it."
+    }
+  ],
+  "journeys": [
+    {
+      "id": "JN-002681a38dec753e6ac1f4de",
+      "kind": "reviewer",
+      "name": "reviewer-premium-ai-1.3.0",
+      "title": "Reviewer reaches premium AI feature",
+      "result": "fail",
+      "stepCount": 4,
+      "firstFailedStep": 4,
+      "firstChangedStep": 4,
+      "recordedAt": "2026-09-25T09:07:18.568Z",
+      "lastRunAt": "2026-09-25T09:07:18.569Z",
+      "artifactSha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
+      "device": {
+        "serial": "emulator-5554",
+        "manufacturer": "Google",
+        "model": "sdk_gphone64_x86_64",
+        "androidRelease": "14",
+        "apiLevel": 34
+      },
+      "credentialRef": {
+        "label": "Reviewer account pulsefit.reviewer@attest.example — password + TOTP in team vault (ref only)",
+        "expiresAt": "2027-01-15T00:00:00.000Z"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "action": "Launch PulseFit from a fresh install",
+          "expectedState": "PulseFit home screen with the \"Start workout\" button visible",
+          "observedState": "Home screen shown with \"Start workout\"",
+          "status": "pass",
+          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "activity": "app.pulsefit.MainActivity",
+          "screenshot": {
+            "path": "reviewer-premium-ai-1.3.0/step-001.png",
+            "sha256": "d2804e71a82ccab0487225a50aae508d105830cd97d8c0b7bf3c86b5b22c91ec"
+          },
+          "note": "Fresh install; reviewer account not yet signed in",
+          "evidencePaths": [
+            "reviewer-premium-ai-1.3.0/step-001.png"
+          ]
+        },
+        {
+          "order": 2,
+          "action": "Sign in with the reviewer account",
+          "expectedState": "Workout dashboard for the signed-in reviewer",
+          "observedState": "Dashboard shown for reviewer account",
+          "status": "pass",
+          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "activity": "app.pulsefit.MainActivity",
+          "screenshot": {
+            "path": "reviewer-premium-ai-1.3.0/step-002.png",
+            "sha256": "8f72ed3a27ca10eec7a6c9870d168fb2e771f9462002d7962bff6b0fdc62f925"
+          },
+          "evidencePaths": [
+            "reviewer-premium-ai-1.3.0/step-002.png"
+          ]
+        },
+        {
+          "order": 3,
+          "action": "Open Settings from the profile menu",
+          "expectedState": "Settings screen with Account, Privacy, and Premium AI entries",
+          "observedState": "Settings screen open (app.pulsefit.SettingsActivity)",
+          "status": "pass",
+          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "activity": "app.pulsefit.SettingsActivity",
+          "screenshot": {
+            "path": "reviewer-premium-ai-1.3.0/step-003.png",
+            "sha256": "bc0c02e6bbeab1d543c4920de8cb8944e78f86a7b9d9df93c28813c2fa4550ae"
+          },
+          "evidencePaths": [
+            "reviewer-premium-ai-1.3.0/step-003.png"
+          ]
+        },
+        {
+          "order": 4,
+          "action": "Tap \"Premium AI Coach\"",
+          "expectedState": "Premium AI Coach screen with the plan selector visible",
+          "observedState": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change",
+          "status": "fail",
+          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "activity": "app.pulsefit.MainActivity",
+          "screenshot": {
+            "path": "reviewer-premium-ai-1.3.0/step-004.png",
+            "sha256": "7c43e1b4ca647e09ad92bad07e7a5700920530a96df4fd828be03b861233e49a"
+          },
+          "note": "Feature gate now depends on the metrics sync added in 1.3; reviewer path blocked",
+          "evidencePaths": [
+            "reviewer-premium-ai-1.3.0/step-004.png"
+          ]
+        }
+      ]
+    }
+  ],
+  "exceptions": [],
+  "unresolvedQuestions": [
+    "android.permission.RECORD_AUDIO: android.permission.RECORD_AUDIO was removed between pulsefit-1.2.0.apk and pulsefit-1.3.0.apk, but the Data Safety form still declares \"audio.voice_or_sound_recordings\". The store surface has drifted from the product.",
+    "metrics.amplitude.com: New network destination metrics.amplitude.com appears in the candidate build and is disclosed in neither the Data Safety destinations nor the privacy policy.",
+    "calendar.calendar_events: Data Safety declares collection of \"calendar.calendar_events\", but neither the base nor the candidate build contains android.permission.READ_CALENDAR or android.permission.WRITE_CALENDAR. The claim currently rests on nothing observable."
+  ],
+  "decision": {
+    "recommendation": "hold",
+    "rationale": [
+      "3 confirmed contradictions between the release candidate and the promises made about it (declarations, claims, or approved journeys).",
+      "3 changes require human review before submission."
+    ],
+    "status": "pending"
+  },
+  "id": "RP-df5e2bb7d28228def164bfcd"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "attest.data-safety/1",
+  "collectedDataTypes": [
+    {
+      "id": "location.precise_location",
+      "shared": false,
+      "optional": false,
+      "purpose": "Workout tracking"
+    },
+    {
+      "id": "audio.voice_or_sound_recordings",
+      "shared": false,
+      "optional": true
+    },
+    {
+      "id": "calendar.calendar_events",
+      "shared": false,
+      "optional": true
+    }
+  ],
+  "sdkDisclosures": [
+    "Firebase Analytics"
+  ],
+  "domains": [
+    "api.pulsefit.app"
+  ],
+  "effectiveDate": "2026-08-15",
+  "source": "play-console-export (stale)"
+}

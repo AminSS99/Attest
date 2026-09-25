@@ -1,0 +1,7 @@
+PulseFit Privacy Policy
+
+We collect precise location to map your workouts. Workout data is stored on
+your device and synced to api.pulsefit.app. We use Firebase Analytics to
+understand feature usage. We do not sell personal data.
+
+Contact: privacy@pulsefit.app

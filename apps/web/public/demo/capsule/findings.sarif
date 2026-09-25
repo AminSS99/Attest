@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Attest",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/attest-dev/attest",
+          "rules": [
+            {
+              "id": "TG-001",
+              "name": "New dangerous permission not covered by Data Safety answers",
+              "shortDescription": {
+                "text": "New dangerous permission not covered by Data Safety answers"
+              },
+              "fullDescription": {
+                "text": "The candidate build declares a new dangerous permission whose mapped data type is absent from the imported Data Safety declaration."
+              },
+              "help": {
+                "text": "Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it."
+              }
+            },
+            {
+              "id": "TG-002",
+              "name": "New third-party SDK without any disclosure",
+              "shortDescription": {
+                "text": "New third-party SDK without any disclosure"
+              },
+              "fullDescription": {
+                "text": "A third-party SDK appears in the candidate build but is not disclosed in the Data Safety form or mentioned in the privacy policy."
+              },
+              "help": {
+                "text": "Disclose the SDK and its data practices in the Data Safety form and privacy policy, or remove it from the build."
+              }
+            },
+            {
+              "id": "TG-003",
+              "name": "New network destination not disclosed",
+              "shortDescription": {
+                "text": "New network destination not disclosed"
+              },
+              "fullDescription": {
+                "text": "A new destination host is embedded in the candidate build and appears neither in Data Safety destinations nor in the privacy policy."
+              },
+              "help": {
+                "text": "Confirm what data flows to this destination and disclose it, or remove the integration that introduced it."
+              }
+            },
+            {
+              "id": "TG-004",
+              "name": "Declared data type has no supporting build evidence",
+              "shortDescription": {
+                "text": "Declared data type has no supporting build evidence"
+              },
+              "fullDescription": {
+                "text": "The Data Safety form declares a collected data type, but neither build contains the permission evidence that usually supports it. The claim may be stale or may rely on behavior the binary cannot show."
+              },
+              "help": {
+                "text": "Confirm the collection path and attach evidence, or narrow the Data Safety declaration."
+              }
+            },
+            {
+              "id": "TG-005",
+              "name": "Removed permission still declared in Data Safety",
+              "shortDescription": {
+                "text": "Removed permission still declared in Data Safety"
+              },
+              "fullDescription": {
+                "text": "A permission present in the previous build is gone from the candidate, yet the Data Safety form still declares the mapped data type. The store surface has drifted from the product."
+              },
+              "help": {
+                "text": "Re-answer the affected Data Safety questions for this release so the form stops over-claiming."
+              }
+            },
+            {
+              "id": "JT-001",
+              "name": "Reviewer journey failed at a recorded step",
+              "shortDescription": {
+                "text": "Reviewer journey failed at a recorded step"
+              },
+              "fullDescription": {
+                "text": "A run of an approved journey did not reach the expected visible state at some step, so the reviewer path no longer completes on this build."
+              },
+              "help": {
+                "text": "Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
+              }
+            },
+            {
+              "id": "JT-002",
+              "name": "Journey step changed since the approved baseline",
+              "shortDescription": {
+                "text": "Journey step changed since the approved baseline"
+              },
+              "fullDescription": {
+                "text": "The journey still passes, but an action or expected visible result differs from the previously approved baseline recording."
+              },
+              "help": {
+                "text": "Confirm the step change is intentional, update the reviewer instructions, and re-approve the baseline journey for this release."
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "TG-005",
+          "level": "warning",
+          "message": {
+            "text": "android.permission.RECORD_AUDIO was removed between pulsefit-1.2.0.apk and pulsefit-1.3.0.apk, but the Data Safety form still declares \"audio.voice_or_sound_recordings\". The store surface has drifted from the product.\n\nComparison: removedPermissions contains android.permission.RECORD_AUDIO; declared(collectedDataTypes still contains \"audio.voice_or_sound_recordings\")\n\nRemediation: Re-answer the affected Data Safety questions for this release so the form stops over-claiming."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-11549d6603e766d1"
+          },
+          "properties": {
+            "state": "changed_requires_review",
+            "severity": "medium",
+            "subject": "android.permission.RECORD_AUDIO"
+          }
+        },
+        {
+          "ruleId": "TG-003",
+          "level": "error",
+          "message": {
+            "text": "New network destination metrics.amplitude.com appears in the candidate build and is disclosed in neither the Data Safety destinations nor the privacy policy.\n\nComparison: observed(metrics.amplitude.com) vs declared(destination not listed)\n\nRemediation: Confirm what data flows to this destination and disclose it, or remove the integration that introduced it."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-13539850c5646f12"
+          },
+          "properties": {
+            "state": "changed_requires_review",
+            "severity": "high",
+            "subject": "metrics.amplitude.com"
+          }
+        },
+        {
+          "ruleId": "TG-004",
+          "level": "warning",
+          "message": {
+            "text": "Data Safety declares collection of \"calendar.calendar_events\", but neither the base nor the candidate build contains android.permission.READ_CALENDAR or android.permission.WRITE_CALENDAR. The claim currently rests on nothing observable.\n\nComparison: declared(\"calendar.calendar_events\") vs observed(no android.permission.READ_CALENDAR|android.permission.WRITE_CALENDAR in either build)\n\nRemediation: Confirm the collection path and attach evidence, or narrow the Data Safety declaration."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-395fc6f5205bb2db"
+          },
+          "properties": {
+            "state": "evidence_missing",
+            "severity": "medium",
+            "subject": "calendar.calendar_events"
+          }
+        },
+        {
+          "ruleId": "TG-002",
+          "level": "error",
+          "message": {
+            "text": "New SDK Amplitude Analytics (Amplitude) is present in the build but disclosed nowhere the team has declared.\n\nComparison: observed(com.amplitude via com/amplitude) vs declared(no Data Safety disclosure, no privacy-policy mention)\n\nRemediation: Disclose the SDK and its data practices in the Data Safety form and privacy policy, or remove it from the build."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-594f69a48b5990e1"
+          },
+          "properties": {
+            "state": "confirmed_contradiction",
+            "severity": "high",
+            "subject": "com.amplitude"
+          }
+        },
+        {
+          "ruleId": "JT-001",
+          "level": "error",
+          "message": {
+            "text": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.\n\nComparison: approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)\n\nRemediation: Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-69cb7b1c5b657a23"
+          },
+          "properties": {
+            "state": "confirmed_contradiction",
+            "severity": "high",
+            "subject": "reviewer-premium-ai-1.3.0"
+          }
+        },
+        {
+          "ruleId": "TG-001",
+          "level": "error",
+          "message": {
+            "text": "Build declares android.permission.CAMERA (Camera (photos)), but the Data Safety form does not list \"photos_and_videos.photos\". One of them is wrong.\n\nComparison: observed(android.permission.CAMERA) vs declared(collectedDataTypes missing \"photos_and_videos.photos\")\n\nRemediation: Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-7716dd7492743738"
+          },
+          "properties": {
+            "state": "confirmed_contradiction",
+            "severity": "high",
+            "subject": "android.permission.CAMERA"
+          }
+        }
+      ]
+    }
+  ]
+}

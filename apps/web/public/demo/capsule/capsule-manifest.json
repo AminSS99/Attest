@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "attest.evidence-capsule/1",
+  "id": "EC-8eb76a0fc2fd25a8b5cc2cb2",
+  "createdAt": "2026-09-25T09:07:18.573Z",
+  "tool": {
+    "name": "attest-cli",
+    "version": "0.1.0"
+  },
+  "artifact": {
+    "fileName": "pulsefit-1.3.0.apk",
+    "sha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
+    "packageName": "app.pulsefit",
+    "versionName": "1.3.0",
+    "versionCode": "10300"
+  },
+  "toolset": {
+    "cli": "0.1.0",
+    "ruleset": "core-truth-gap/2026.09"
+  },
+  "files": [
+    {
+      "path": "declarations/data-safety.json",
+      "sha256": "d044e2f7b861b880e932db8c559e39bcdbdea607e3b77acfd79ccf067a1ed80f",
+      "bytes": 589
+    },
+    {
+      "path": "declarations/privacy-policy.txt",
+      "sha256": "8147c3a7e95e58283be1183cf2f7b126bbf575e2dc87057155b1e5f2b749f35f",
+      "bytes": 261
+    },
+    {
+      "path": "declarations/store-listing.txt",
+      "sha256": "82e4023cd34e1c3f27f3524612d8a26ae086a1ead1b159afd6956d28f6836699",
+      "bytes": 128
+    },
+    {
+      "path": "diff.json",
+      "sha256": "39e72d7a5f5e35850755e59b45c48bf6c4b8088607e16d314599e376384a9d32",
+      "bytes": 1355
+    },
+    {
+      "path": "findings.json",
+      "sha256": "30df55dcdccebd3390007c0663df0369c52a95f37de1d529458b7e59a4c38c43",
+      "bytes": 7687
+    },
+    {
+      "path": "findings.sarif",
+      "sha256": "8eb53ad7a983ab057861e22efb0c1a38850557c39f96800d346e012e509b91f3",
+      "bytes": 11591
+    },
+    {
+      "path": "journeys/JN-002681a38dec753e6ac1f4de/comparison.json",
+      "sha256": "e5644f21f8ea86eab2a7f43a375a0e992d07baf862a23203a4d55f339ce562a1",
+      "bytes": 4542
+    },
+    {
+      "path": "journeys/JN-002681a38dec753e6ac1f4de/journey.json",
+      "sha256": "661de323cfc59b02aba55cac0347675fe6e960f149fa051563102865659b357d",
+      "bytes": 3477
+    },
+    {
+      "path": "journeys/JN-002681a38dec753e6ac1f4de/reviewer-premium-ai-1.3.0/step-001.png",
+      "sha256": "d2804e71a82ccab0487225a50aae508d105830cd97d8c0b7bf3c86b5b22c91ec",
+      "bytes": 226
+    },
+    {
+      "path": "journeys/JN-002681a38dec753e6ac1f4de/reviewer-premium-ai-1.3.0/step-002.png",
+      "sha256": "8f72ed3a27ca10eec7a6c9870d168fb2e771f9462002d7962bff6b0fdc62f925",
+      "bytes": 226
+    },
+    {
+      "path": "journeys/JN-002681a38dec753e6ac1f4de/reviewer-premium-ai-1.3.0/step-003.png",
+      "sha256": "bc0c02e6bbeab1d543c4920de8cb8944e78f86a7b9d9df93c28813c2fa4550ae",
+      "bytes": 226
+    },
+    {
+      "path": "journeys/JN-002681a38dec753e6ac1f4de/reviewer-premium-ai-1.3.0/step-004.png",
+      "sha256": "7c43e1b4ca647e09ad92bad07e7a5700920530a96df4fd828be03b861233e49a",
+      "bytes": 224
+    },
+    {
+      "path": "passport.html",
+      "sha256": "b1c0c894d91da716c45467a69d9bff99551fbb12c5fe8f68228195cbdd6eac4f",
+      "bytes": 19496
+    },
+    {
+      "path": "passport.json",
+      "sha256": "5aaf567afff4fa409dd5daa5efe3c58d0f32b2751b9d967231946bc5ec5c3ba2",
+      "bytes": 34110
+    }
+  ],
+  "redactions": [
+    "reviewer credentials",
+    "test account identities"
+  ],
+  "evidenceRootHash": "f1363d941d8848aa4dce9ed578e69abe7e89abca8cc8010523a1aa71eb122f4e"
+}

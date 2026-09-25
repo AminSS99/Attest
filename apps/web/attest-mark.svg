@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Attest</title>
+  <rect width="64" height="64" fill="#173f3b"/>
+  <path d="M13 49 26.5 15h10L50 49h-9.5l-2.6-7.4H25.1L22.5 49H13Zm14.8-15h7.4L31.5 23l-3.7 11Z" fill="#fff" fill-rule="evenodd"/>
+  <circle cx="52.5" cy="47" r="3.5" fill="#a9d6c4"/>
+</svg>

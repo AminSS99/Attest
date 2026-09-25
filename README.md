@@ -6,6 +6,18 @@ Attest shows exactly what changed in your mobile release, which declarations and
 
 Attest is not legal advice and never promises store approval. It produces traceable technical evidence, detects contradictions, and lets a human make the call.
 
+## Public website (local preview)
+
+The public site lives in `apps/web`. It is static HTML and CSS, with no website runtime dependencies. It includes a responsive reading copy of the synthetic PulseFit Passport and the original sealed demo Capsule. No deployment is configured.
+
+```bash
+npm run web:dev       # open http://127.0.0.1:4173
+npm run web:build     # writes apps/web/dist/
+node apps/web/scripts/serve.mjs --built  # preview the built site on the same URL
+```
+
+The CLI build and test commands below remain independent of the website build.
+
 ## What's here
 
 This monorepo is the **open-source core** (Apache-2.0, see `PRODUCT_PLAN.md` §12):
@@ -19,13 +31,21 @@ Zero runtime dependencies. The ZIP reader, binary-manifest (AXML) parser, and DE
 
 ## Quickstart
 
+Clone the source (the CLI is not yet published to npm):
+
 ```bash
-npm install
+git clone https://github.com/AminSS99/Attest.git
+cd Attest
+npm ci
 npm run build
+export PATH="$PWD/node_modules/.bin:$PATH" # makes the local `attest` command available in this shell
 npm test          # 73 tests, including Reviewer Twin, Release Decision Workflow, and onboarding e2e
 npm run demo      # the MVP signature: truth gaps + failed reviewer journey → HOLD, repair → SHIP
 ./scripts/smoke-action.sh   # realistic GitHub Action smoke test (no runner needed)
 ```
+
+To avoid changing `PATH`, call `node packages/cli/dist/src/cli.js` in place of
+`attest` in the examples below.
 
 Pilot onboarding (no hosted dashboard):
 

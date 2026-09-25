@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Release Passport — app.pulsefit 1.3.0</title>
+<style>
+:root{font-family:-apple-system,"SF Pro Text",Helvetica,Arial,sans-serif;color:#16232e}
+body{max-width:960px;margin:2rem auto;padding:0 1rem}
+header.top{border-bottom:3px solid #16232e;padding-bottom:1rem;margin-bottom:1.5rem}
+.badge{font-size:1.1rem;font-weight:700;padding:.25rem .8rem;border-radius:6px;color:#fff}
+.badge.hold{background:#b3261e}.badge.review{background:#9a6a00}.badge.ship{background:#1e7d32}
+.meta{color:#52616e;font-size:.9rem}code{background:#eef2f5;padding:.1rem .3rem;border-radius:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{border:1px solid #d5dde3;border-radius:10px;padding:1rem}
+.finding{border:1px solid #d5dde3;border-left:6px solid #9aa7b0;border-radius:8px;padding:.8rem 1rem;margin:.8rem 0}
+.finding.blocker,.finding.high{border-left-color:#b3261e}
+.finding.medium{border-left-color:#9a6a00}
+.finding header{font-size:.8rem;color:#52616e}
+.sev{font-weight:700;margin-right:.6rem}.state{margin-right:.6rem}
+.cmp,.rem{font-size:.9rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border-bottom:1px solid #e3e9ed;padding:.45rem;text-align:left}
+tr.st-contradicted td{background:#fdecea}tr.st-unsupported td{background:#fff7e0}
+.add{color:#1e7d32}.del{color:#b3261e}
+.journey{border-left-width:6px}
+tr.jt-fail td,tr.jt-blocked td{background:#fdecea}
+footer{margin-top:2rem;border-top:1px solid #d5dde3;padding-top:1rem;font-size:.8rem;color:#52616e}
+blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
+@media(max-width:640px){body{margin:1rem auto;padding:0 1rem;overflow-wrap:anywhere}.grid{display:block}.card{margin-bottom:1rem}table{display:block;max-width:100%;overflow-x:auto}h1{line-height:1.3}.badge{display:inline-block}code{overflow-wrap:anywhere}}
+</style></head><body>
+<header class="top">
+  <h1>Release Passport <span class="badge hold">HOLD</span></h1>
+  <p class="meta"><strong>app.pulsefit</strong> ·
+  1.2.0 &rarr; <strong>1.3.0</strong> ·
+  Passport <code>RP-df5e2bb7d28228def164bfcd</code> · created 2026-09-25T09:07:18.570Z</p>
+  <p class="meta">base <code>pulsefit-1.2.0.apk</code> (7068eacb9f82&hellip;)
+   &rarr; candidate <code>pulsefit-1.3.0.apk</code> (a52a1a64eb48&hellip;)</p>
+  <p>3 confirmed contradictions between the release candidate and the promises made about it (declarations, claims, or approved journeys).<br>3 changes require human review before submission.</p>
+</header>
+
+<div class="grid">
+  <div class="card"><h2>Release delta</h2>
+    <p>5 material changes detected.</p>
+    <ul>
+      <li><strong>Permissions added</strong><ul><li class="add">+ android.permission.CAMERA</li></ul></li>
+      <li><strong>Permissions removed</strong><ul><li class="del">&minus; android.permission.RECORD_AUDIO</li></ul></li>
+      <li><strong>SDKs added</strong><ul><li class="add">+ Amplitude Analytics (Amplitude)</li></ul></li>
+      
+      <li><strong>Destinations added</strong><ul><li class="add">+ metrics.amplitude.com</li></ul></li>
+      
+      <li><strong>Exported components added</strong><ul><li class="add">+ app.pulsefit.DeepLinkReceiver</li></ul></li>
+      
+      
+    </ul>
+    
+  </div>
+  <div class="card"><h2>Decision</h2>
+    <p><strong>Attest recommendation:</strong> <span class="badge hold">HOLD</span></p>
+    <p><strong>Human decision:</strong> <span class="badge review">PENDING</span></p>
+    <p class="meta">A person makes the final call. Attest never certifies approval or legal compliance.</p>
+    <p class="meta">Passport revision 0</p>
+    <h3>Open questions (3)</h3>
+    <ul><li>android.permission.RECORD_AUDIO: android.permission.RECORD_AUDIO was removed between pulsefit-1.2.0.apk and pulsefit-1.3.0.apk, but the Data Safety form still declares &quot;audio.voice_or_sound_recordings&quot;. The store surface has drifted from the product.</li><li>metrics.amplitude.com: New network destination metrics.amplitude.com appears in the candidate build and is disclosed in neither the Data Safety destinations nor the privacy policy.</li><li>calendar.calendar_events: Data Safety declares collection of &quot;calendar.calendar_events&quot;, but neither the base nor the candidate build contains android.permission.READ_CALENDAR or android.permission.WRITE_CALENDAR. The claim currently rests on nothing observable.</li></ul>
+  </div>
+</div>
+
+<h2>Truth gaps (6)</h2>
+<section class="finding high">
+  <header><span class="sev">HIGH</span>
+    <span class="state">changed requires review</span>
+    <code>F-13539850c5646f12</code> · <code>TG-003</code></header>
+  <h3>New network destination not disclosed</h3>
+  <p>New network destination metrics.amplitude.com appears in the candidate build and is disclosed in neither the Data Safety destinations nor the privacy policy.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>observed(metrics.amplitude.com) vs declared(destination not listed)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Confirm what data flows to this destination and disclose it, or remove the integration that introduced it.</p>
+  <details><summary>Evidence (3)</summary><ul><li><span class="cls">observed</span> <code>build_fact</code> — dex:url https://metrics.amplitude.com</li><li><span class="cls">declared</span> <code>data_safety</code> — data-safety:domains<blockquote>play-console-export (stale)</blockquote></li><li><span class="cls">declared</span> <code>privacy_policy</code> — privacy-policy (no mention of &quot;metrics.amplitude.com&quot;)</li></ul></details>
+</section>
+<section class="finding high">
+  <header><span class="sev">HIGH</span>
+    <span class="state">confirmed contradiction</span>
+    <code>F-594f69a48b5990e1</code> · <code>TG-002</code></header>
+  <h3>New third-party SDK without any disclosure</h3>
+  <p>New SDK Amplitude Analytics (Amplitude) is present in the build but disclosed nowhere the team has declared.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>observed(com.amplitude via com/amplitude) vs declared(no Data Safety disclosure, no privacy-policy mention)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Disclose the SDK and its data practices in the Data Safety form and privacy policy, or remove it from the build.</p>
+  <details><summary>Evidence (3)</summary><ul><li><span class="cls">observed</span> <code>build_fact</code> — dex:packages com/amplitude</li><li><span class="cls">declared</span> <code>data_safety</code> — data-safety:sdkDisclosures<blockquote>play-console-export (stale)</blockquote></li><li><span class="cls">declared</span> <code>privacy_policy</code> — privacy-policy (no mention of &quot;Amplitude Analytics&quot; or &quot;Amplitude&quot;)</li></ul></details>
+</section>
+<section class="finding high">
+  <header><span class="sev">HIGH</span>
+    <span class="state">confirmed contradiction</span>
+    <code>F-69cb7b1c5b657a23</code> · <code>JT-001</code></header>
+  <h3>Reviewer journey failed at a recorded step</h3>
+  <p>Reviewer journey &quot;Reviewer reaches premium AI feature&quot; failed at step 4 (&quot;Tap &quot;Premium AI Coach&quot;&quot;): expected &quot;Premium AI Coach screen with the plan selector visible&quot; but observed &quot;App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change&quot;. The approved reviewer path no longer completes on this build.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline.</p>
+  <details><summary>Evidence (3)</summary><ul><li><span class="cls">observed</span> <code>journey</code> — JN-002681a38dec753e6ac1f4de#step-4<blockquote>App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change</blockquote></li><li><span class="cls">attested</span> <code>journey</code> — JN-5d8f98a4b40a3c1f5bad8bd1#step-4:expected<blockquote>Premium AI Coach screen with the plan selector visible</blockquote></li><li><span class="cls">observed</span> <code>journey</code> — JC-f7515b101b6f2ac2445b287d<blockquote>FAILED at step 4 of 5: Candidate step 4 failed: expected &quot;Premium AI Coach screen with the plan selector visible&quot; but observed &quot;App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change&quot;.</blockquote></li></ul></details>
+</section>
+<section class="finding high">
+  <header><span class="sev">HIGH</span>
+    <span class="state">confirmed contradiction</span>
+    <code>F-7716dd7492743738</code> · <code>TG-001</code></header>
+  <h3>New dangerous permission not covered by Data Safety answers</h3>
+  <p>Build declares android.permission.CAMERA (Camera (photos)), but the Data Safety form does not list &quot;photos_and_videos.photos&quot;. One of them is wrong.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>observed(android.permission.CAMERA) vs declared(collectedDataTypes missing &quot;photos_and_videos.photos&quot;)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it.</p>
+  <details><summary>Evidence (2)</summary><ul><li><span class="cls">observed</span> <code>build_fact</code> — manifest:uses-permission android.permission.CAMERA</li><li><span class="cls">declared</span> <code>data_safety</code> — data-safety:collectedDataTypes (&quot;photos_and_videos.photos&quot; absent)<blockquote>play-console-export (stale)</blockquote></li></ul></details>
+</section>
+<section class="finding medium">
+  <header><span class="sev">MEDIUM</span>
+    <span class="state">changed requires review</span>
+    <code>F-11549d6603e766d1</code> · <code>TG-005</code></header>
+  <h3>Removed permission still declared in Data Safety</h3>
+  <p>android.permission.RECORD_AUDIO was removed between pulsefit-1.2.0.apk and pulsefit-1.3.0.apk, but the Data Safety form still declares &quot;audio.voice_or_sound_recordings&quot;. The store surface has drifted from the product.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>removedPermissions contains android.permission.RECORD_AUDIO; declared(collectedDataTypes still contains &quot;audio.voice_or_sound_recordings&quot;)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Re-answer the affected Data Safety questions for this release so the form stops over-claiming.</p>
+  <details><summary>Evidence (2)</summary><ul><li><span class="cls">observed</span> <code>build_fact</code> — diff:removedPermissions android.permission.RECORD_AUDIO</li><li><span class="cls">declared</span> <code>data_safety</code> — data-safety:collectedDataTypes[&quot;audio.voice_or_sound_recordings&quot;]<blockquote>play-console-export (stale)</blockquote></li></ul></details>
+</section>
+<section class="finding medium">
+  <header><span class="sev">MEDIUM</span>
+    <span class="state">evidence missing</span>
+    <code>F-395fc6f5205bb2db</code> · <code>TG-004</code></header>
+  <h3>Declared data type has no supporting build evidence</h3>
+  <p>Data Safety declares collection of &quot;calendar.calendar_events&quot;, but neither the base nor the candidate build contains android.permission.READ_CALENDAR or android.permission.WRITE_CALENDAR. The claim currently rests on nothing observable.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>declared(&quot;calendar.calendar_events&quot;) vs observed(no android.permission.READ_CALENDAR|android.permission.WRITE_CALENDAR in either build)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Confirm the collection path and attach evidence, or narrow the Data Safety declaration.</p>
+  <details><summary>Evidence (2)</summary><ul><li><span class="cls">declared</span> <code>data_safety</code> — data-safety:collectedDataTypes[&quot;calendar.calendar_events&quot;]<blockquote>play-console-export (stale)</blockquote></li><li><span class="cls">observed</span> <code>build_fact</code> — manifest:uses-permission (absent in base and candidate)</li></ul></details>
+</section>
+
+
+
+<h2>Reviewer Twin journeys (1)</h2>
+<section class="finding journey blocker">
+  <header><span class="sev">JOURNEY</span>
+    <span class="state">FAIL</span>
+    <code>JN-002681a38dec753e6ac1f4de</code> · <code>reviewer</code> · 4 steps</header>
+  <h3>Reviewer reaches premium AI feature</h3>
+  <p class="meta">recorded 2026-09-25T09:07:18.568Z · last run 2026-09-25T09:07:18.569Z · device <code>emulator-5554</code> · build <code>a52a1a64eb48…</code></p>
+  <p class="rem"><strong>First failed step:</strong> 4 — Tap &quot;Premium AI Coach&quot;</p><p class="rem"><strong>First changed step vs approved baseline:</strong> 4</p>
+  <p class="meta">credential reference: <strong>Reviewer account pulsefit.reviewer@attest.example — password + TOTP in team vault (ref only)</strong> · expires 2027-01-15T00:00:00.000Z · readiness <strong>ready</strong> (reference only — no secret stored)</p>
+  <table><thead><tr><th>#</th><th>Exact step</th><th>Status</th><th>Expected</th><th>Observed</th><th>Screenshot</th></tr></thead>
+  <tbody><tr class="jt-pass">
+  <td>1</td><td>Launch PulseFit from a fresh install</td><td>pass</td>
+  <td>PulseFit home screen with the &quot;Start workout&quot; button visible</td><td>Home screen shown with &quot;Start workout&quot;</td>
+  <td><code>reviewer-premium-ai-1.3.0/step-001.png</code> <span class="meta">d2804e71a82c…</span></td>
+</tr><tr class="jt-pass">
+  <td>2</td><td>Sign in with the reviewer account</td><td>pass</td>
+  <td>Workout dashboard for the signed-in reviewer</td><td>Dashboard shown for reviewer account</td>
+  <td><code>reviewer-premium-ai-1.3.0/step-002.png</code> <span class="meta">8f72ed3a27ca…</span></td>
+</tr><tr class="jt-pass">
+  <td>3</td><td>Open Settings from the profile menu</td><td>pass</td>
+  <td>Settings screen with Account, Privacy, and Premium AI entries</td><td>Settings screen open (app.pulsefit.SettingsActivity)</td>
+  <td><code>reviewer-premium-ai-1.3.0/step-003.png</code> <span class="meta">bc0c02e6bbea…</span></td>
+</tr><tr class="jt-fail">
+  <td>4</td><td>Tap &quot;Premium AI Coach&quot;</td><td>fail</td>
+  <td>Premium AI Coach screen with the plan selector visible</td><td>App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change</td>
+  <td><code>reviewer-premium-ai-1.3.0/step-004.png</code> <span class="meta">7c43e1b4ca64…</span></td>
+</tr></tbody></table>
+</section>
+
+<h2>Truth Graph claims (28)</h2>
+<table><thead><tr><th>Claim</th><th>Kind</th><th>Best evidence</th><th>Status</th><th>Support/Conflict</th></tr></thead>
+<tbody><tr class="st-contradicted">
+  <td>android.permission.CAMERA</td><td><code>data_type</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>android.permission.RECORD_AUDIO</td><td><code>data_type</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>We collect audio.voice_or_sound_recordings</td><td><code>data_type</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>1 / 2</td>
+</tr><tr class="st-unsupported">
+  <td>We collect calendar.calendar_events</td><td><code>data_type</code></td>
+  <td>observed</td><td>unsupported</td>
+  <td>1 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>com.amplitude</td><td><code>data_type</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 3</td>
+</tr><tr class="st-supported">
+  <td>We collect location.precise_location</td><td><code>data_type</code></td>
+  <td>observed</td><td>supported</td>
+  <td>2 / 0</td>
+</tr><tr class="st-contradicted">
+  <td>metrics.amplitude.com</td><td><code>data_type</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 3</td>
+</tr><tr class="st-contradicted">
+  <td>We collect photos_and_videos.photos</td><td><code>data_type</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>1 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>android.permission.CAMERA</td><td><code>domain</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>android.permission.RECORD_AUDIO</td><td><code>domain</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-supported">
+  <td>The app contacts api.pulsefit.app</td><td><code>domain</code></td>
+  <td>observed</td><td>supported</td>
+  <td>1 / 0</td>
+</tr><tr class="st-unsupported">
+  <td>calendar.calendar_events</td><td><code>domain</code></td>
+  <td>observed</td><td>unsupported</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>com.amplitude</td><td><code>domain</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 3</td>
+</tr><tr class="st-contradicted">
+  <td>The app contacts metrics.amplitude.com</td><td><code>domain</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>1 / 3</td>
+</tr><tr class="st-supported">
+  <td>The app can access precise location</td><td><code>permission</code></td>
+  <td>observed</td><td>supported</td>
+  <td>1 / 0</td>
+</tr><tr class="st-contradicted">
+  <td>The app can access camera (photos)</td><td><code>permission</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>1 / 2</td>
+</tr><tr class="st-supported">
+  <td>The app requests android.permission.INTERNET</td><td><code>permission</code></td>
+  <td>observed</td><td>supported</td>
+  <td>1 / 0</td>
+</tr><tr class="st-contradicted">
+  <td>android.permission.RECORD_AUDIO</td><td><code>permission</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-unsupported">
+  <td>calendar.calendar_events</td><td><code>permission</code></td>
+  <td>observed</td><td>unsupported</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>com.amplitude</td><td><code>permission</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 3</td>
+</tr><tr class="st-contradicted">
+  <td>metrics.amplitude.com</td><td><code>permission</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 3</td>
+</tr><tr class="st-contradicted">
+  <td>android.permission.CAMERA</td><td><code>sdk</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>android.permission.RECORD_AUDIO</td><td><code>sdk</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 2</td>
+</tr><tr class="st-unsupported">
+  <td>calendar.calendar_events</td><td><code>sdk</code></td>
+  <td>observed</td><td>unsupported</td>
+  <td>0 / 2</td>
+</tr><tr class="st-contradicted">
+  <td>The app embeds Amplitude Analytics</td><td><code>sdk</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>1 / 3</td>
+</tr><tr class="st-supported">
+  <td>The app embeds Firebase Analytics</td><td><code>sdk</code></td>
+  <td>observed</td><td>supported</td>
+  <td>1 / 0</td>
+</tr><tr class="st-supported">
+  <td>The app embeds Firebase Core</td><td><code>sdk</code></td>
+  <td>observed</td><td>supported</td>
+  <td>1 / 0</td>
+</tr><tr class="st-contradicted">
+  <td>metrics.amplitude.com</td><td><code>sdk</code></td>
+  <td>observed</td><td>contradicted</td>
+  <td>0 / 3</td>
+</tr></tbody></table>
+
+<footer>
+  <p>Generated by attest-cli 0.1.0 · ruleset core-truth-gap/2026.09 · schema attest.release-passport/1.</p>
+  <p>Attest provides traceable technical evidence. It is not legal advice and does not guarantee store approval.</p>
+</footer>
+</body></html>

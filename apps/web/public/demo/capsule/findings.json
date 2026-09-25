@@ -1,0 +1,169 @@
+[
+  {
+    "schemaVersion": "attest.finding/1",
+    "id": "F-11549d6603e766d1",
+    "ruleId": "TG-005",
+    "title": "Removed permission still declared in Data Safety",
+    "severity": "medium",
+    "state": "changed_requires_review",
+    "subject": "android.permission.RECORD_AUDIO",
+    "summary": "android.permission.RECORD_AUDIO was removed between pulsefit-1.2.0.apk and pulsefit-1.3.0.apk, but the Data Safety form still declares \"audio.voice_or_sound_recordings\". The store surface has drifted from the product.",
+    "comparison": "removedPermissions contains android.permission.RECORD_AUDIO; declared(collectedDataTypes still contains \"audio.voice_or_sound_recordings\")",
+    "sources": [
+      {
+        "kind": "build_fact",
+        "evidenceClass": "observed",
+        "ref": "diff:removedPermissions android.permission.RECORD_AUDIO"
+      },
+      {
+        "kind": "data_safety",
+        "evidenceClass": "declared",
+        "ref": "data-safety:collectedDataTypes[\"audio.voice_or_sound_recordings\"]",
+        "excerpt": "play-console-export (stale)"
+      }
+    ],
+    "remediation": "Re-answer the affected Data Safety questions for this release so the form stops over-claiming."
+  },
+  {
+    "schemaVersion": "attest.finding/1",
+    "id": "F-13539850c5646f12",
+    "ruleId": "TG-003",
+    "title": "New network destination not disclosed",
+    "severity": "high",
+    "state": "changed_requires_review",
+    "subject": "metrics.amplitude.com",
+    "summary": "New network destination metrics.amplitude.com appears in the candidate build and is disclosed in neither the Data Safety destinations nor the privacy policy.",
+    "comparison": "observed(metrics.amplitude.com) vs declared(destination not listed)",
+    "sources": [
+      {
+        "kind": "build_fact",
+        "evidenceClass": "observed",
+        "ref": "dex:url https://metrics.amplitude.com"
+      },
+      {
+        "kind": "data_safety",
+        "evidenceClass": "declared",
+        "ref": "data-safety:domains",
+        "excerpt": "play-console-export (stale)"
+      },
+      {
+        "kind": "privacy_policy",
+        "evidenceClass": "declared",
+        "ref": "privacy-policy (no mention of \"metrics.amplitude.com\")"
+      }
+    ],
+    "remediation": "Confirm what data flows to this destination and disclose it, or remove the integration that introduced it."
+  },
+  {
+    "schemaVersion": "attest.finding/1",
+    "id": "F-395fc6f5205bb2db",
+    "ruleId": "TG-004",
+    "title": "Declared data type has no supporting build evidence",
+    "severity": "medium",
+    "state": "evidence_missing",
+    "subject": "calendar.calendar_events",
+    "summary": "Data Safety declares collection of \"calendar.calendar_events\", but neither the base nor the candidate build contains android.permission.READ_CALENDAR or android.permission.WRITE_CALENDAR. The claim currently rests on nothing observable.",
+    "comparison": "declared(\"calendar.calendar_events\") vs observed(no android.permission.READ_CALENDAR|android.permission.WRITE_CALENDAR in either build)",
+    "sources": [
+      {
+        "kind": "data_safety",
+        "evidenceClass": "declared",
+        "ref": "data-safety:collectedDataTypes[\"calendar.calendar_events\"]",
+        "excerpt": "play-console-export (stale)"
+      },
+      {
+        "kind": "build_fact",
+        "evidenceClass": "observed",
+        "ref": "manifest:uses-permission (absent in base and candidate)"
+      }
+    ],
+    "remediation": "Confirm the collection path and attach evidence, or narrow the Data Safety declaration."
+  },
+  {
+    "schemaVersion": "attest.finding/1",
+    "id": "F-594f69a48b5990e1",
+    "ruleId": "TG-002",
+    "title": "New third-party SDK without any disclosure",
+    "severity": "high",
+    "state": "confirmed_contradiction",
+    "subject": "com.amplitude",
+    "summary": "New SDK Amplitude Analytics (Amplitude) is present in the build but disclosed nowhere the team has declared.",
+    "comparison": "observed(com.amplitude via com/amplitude) vs declared(no Data Safety disclosure, no privacy-policy mention)",
+    "sources": [
+      {
+        "kind": "build_fact",
+        "evidenceClass": "observed",
+        "ref": "dex:packages com/amplitude"
+      },
+      {
+        "kind": "data_safety",
+        "evidenceClass": "declared",
+        "ref": "data-safety:sdkDisclosures",
+        "excerpt": "play-console-export (stale)"
+      },
+      {
+        "kind": "privacy_policy",
+        "evidenceClass": "declared",
+        "ref": "privacy-policy (no mention of \"Amplitude Analytics\" or \"Amplitude\")"
+      }
+    ],
+    "remediation": "Disclose the SDK and its data practices in the Data Safety form and privacy policy, or remove it from the build."
+  },
+  {
+    "schemaVersion": "attest.finding/1",
+    "id": "F-69cb7b1c5b657a23",
+    "ruleId": "JT-001",
+    "title": "Reviewer journey failed at a recorded step",
+    "severity": "high",
+    "state": "confirmed_contradiction",
+    "subject": "reviewer-premium-ai-1.3.0",
+    "summary": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.",
+    "comparison": "approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)",
+    "sources": [
+      {
+        "kind": "journey",
+        "evidenceClass": "observed",
+        "ref": "JN-002681a38dec753e6ac1f4de#step-4",
+        "excerpt": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change"
+      },
+      {
+        "kind": "journey",
+        "evidenceClass": "attested",
+        "ref": "JN-5d8f98a4b40a3c1f5bad8bd1#step-4:expected",
+        "excerpt": "Premium AI Coach screen with the plan selector visible"
+      },
+      {
+        "kind": "journey",
+        "evidenceClass": "observed",
+        "ref": "JC-f7515b101b6f2ac2445b287d",
+        "excerpt": "FAILED at step 4 of 5: Candidate step 4 failed: expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\"."
+      }
+    ],
+    "remediation": "Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
+  },
+  {
+    "schemaVersion": "attest.finding/1",
+    "id": "F-7716dd7492743738",
+    "ruleId": "TG-001",
+    "title": "New dangerous permission not covered by Data Safety answers",
+    "severity": "high",
+    "state": "confirmed_contradiction",
+    "subject": "android.permission.CAMERA",
+    "summary": "Build declares android.permission.CAMERA (Camera (photos)), but the Data Safety form does not list \"photos_and_videos.photos\". One of them is wrong.",
+    "comparison": "observed(android.permission.CAMERA) vs declared(collectedDataTypes missing \"photos_and_videos.photos\")",
+    "sources": [
+      {
+        "kind": "build_fact",
+        "evidenceClass": "observed",
+        "ref": "manifest:uses-permission android.permission.CAMERA"
+      },
+      {
+        "kind": "data_safety",
+        "evidenceClass": "declared",
+        "ref": "data-safety:collectedDataTypes (\"photos_and_videos.photos\" absent)",
+        "excerpt": "play-console-export (stale)"
+      }
+    ],
+    "remediation": "Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it."
+  }
+]
