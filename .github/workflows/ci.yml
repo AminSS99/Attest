@@ -139,3 +139,43 @@ jobs:
           upload-sarif: false
           upload-artifacts: false
           summary: false
+
+  published-action-gate:
+    # Exercise the publicly distributed action ref, not only the local path.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate synthetic demo fixtures
+        run: |
+          npm ci
+          npm run demo
+
+      - name: Attest public action (expect HOLD)
+        id: attest
+        continue-on-error: true
+        uses: AminSS99/Attest/.github/actions/attest@main
+        with:
+          base: attest-out/demo/pulsefit-1.2.0.apk
+          candidate: attest-out/demo/pulsefit-1.3.0.apk
+          data-safety: attest-out/demo/data-safety.json
+          privacy-policy: attest-out/demo/privacy-policy.txt
+          listing: attest-out/demo/store-listing.txt
+          baseline-journey: attest-out/demo/journeys/reviewer-premium-ai-1.2.0.json
+          candidate-journey: attest-out/demo/journeys/reviewer-premium-ai-1.3.0.json
+          upload-sarif: false
+          upload-artifacts: false
+          summary: false
+
+      - name: Assert public action reached the gate
+        env:
+          EXIT_CODE: ${{ steps.attest.outputs.exit-code }}
+          CHECK_CODE: ${{ steps.attest.outputs.check-exit-code }}
+          COMPARE_CODE: ${{ steps.attest.outputs.compare-exit-code }}
+        run: |
+          set -euo pipefail
+          [ "$CHECK_CODE" = "2" ]
+          [ "$COMPARE_CODE" = "2" ]
+          [ "$EXIT_CODE" = "2" ]

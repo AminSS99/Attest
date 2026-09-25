@@ -164,3 +164,9 @@ The Passport recommends (`SHIP` / `REVIEW` / `HOLD`); a human decides. The decis
 Use the reusable action in `.github/actions/attest` (see `examples/github-action.yml` for a full workflow). It validates inputs (missing artifacts, incomplete journey pairs), runs `journey compare` first (text for the summary + JSON feeding `check`/`passport`), then `attest check` (text + SARIF must agree), seals the Passport / Evidence Capsule, uploads SARIF to GitHub code scanning, writes the release delta and blocking contradictions to the step summary, uploads the Passport / Capsule as workflow artifacts, and exits `2` to block the PR on confirmed contradictions or failed journeys (`fail-on: never` reports without failing). Top-level `exit-code` reflects the final gate including journey failures (`check-exit-code` / `compare-exit-code` exposed separately). It posts no PR comments and publishes no credentials, screenshots, or declaration contents by default.
 
 Repository CI (`.github/workflows/ci.yml`) runs build, tests, demo + offline capsule verification, `doctor` on fresh templates, `actionlint` (advisory only), `scripts/smoke-action.sh`, and the composite action itself on demo fixtures.
+
+The public action can also be referenced from another workflow as
+`AminSS99/Attest/.github/actions/attest@main` (pin a commit SHA for production
+use). Repository CI tests that published reference on GitHub's hosted runner
+using **synthetic PulseFit fixtures**. This is a distribution check, not a real
+customer release. See [the hosted-runner record](docs/HOSTED_ACTION_RUN.md).
