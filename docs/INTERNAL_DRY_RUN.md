@@ -44,7 +44,8 @@ happened.**
 
 ## Exact inputs needed for the first real pilot
 
-Per team, all authorized by the owning project (binaries stay on the pilot
+See `docs/PILOT_INTAKE.md` (one-page owning-team checklist). In short, per
+team, all authorized by the owning project (binaries stay on the pilot
 machine; only `PILOT_SCORECARD.md` comes back):
 
 1. Last-shipped base AAB/APK (Play Console, previous release).

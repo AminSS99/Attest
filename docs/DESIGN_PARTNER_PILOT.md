@@ -79,6 +79,10 @@ errors.
 
 ## 2. Required Android artifacts and declarations
 
+> No real pilot inputs have been received yet — see `docs/PILOT_INTAKE.md`
+> for the one-page checklist to send the owning team. The run stays stopped
+> until those items arrive.
+
 Place these under version control or a shared pilot folder (no secrets):
 
 | Input | Where it comes from | Attest flag |
