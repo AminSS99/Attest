@@ -11,6 +11,12 @@ fixtures**. It correctly reported `check-exit-code=2`,
 reporting-only `fail-on=never` run completed successfully. The workflow did
 not test a real partner release.
 
-The `published-action-gate` job added after that run exercises the public
-`AminSS99/Attest/.github/actions/attest@main` reference on a hosted runner.
-Its result should be recorded here after the first completed run.
+The [second hosted run](https://github.com/AminSS99/Attest/actions/runs/36121427748)
+passed all five jobs, including `published-action-gate`. That job invoked
+`AminSS99/Attest/.github/actions/attest@main` through the public Action
+reference and asserted the expected `2 / 2 / 2` check, journey comparison,
+and final gate outputs. The Action's exit 2 was intentional for the synthetic
+HOLD fixture; the job asserted that behavior and passed.
+
+These runs prove source distribution and hosted execution. They do not measure
+setup time, misses, or usefulness on a real Android release.
