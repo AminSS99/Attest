@@ -38,14 +38,21 @@ git clone https://github.com/AminSS99/Attest.git
 cd Attest
 npm ci
 npm run build
-export PATH="$PWD/node_modules/.bin:$PATH" # makes the local `attest` command available in this shell
+npm run attest -- help # reliable source-checkout entry point
 npm test          # 73 tests, including Reviewer Twin, Release Decision Workflow, and onboarding e2e
 npm run demo      # the MVP signature: truth gaps + failed reviewer journey → HOLD, repair → SHIP
 ./scripts/smoke-action.sh   # realistic GitHub Action smoke test (no runner needed)
 ```
 
-To avoid changing `PATH`, call `node packages/cli/dist/src/cli.js` in place of
-`attest` in the examples below.
+For the short `attest ...` examples below, define this shell function once in
+the repository root:
+
+```bash
+attest() { node packages/cli/dist/src/cli.js "$@"; }
+```
+
+Alternatively, run any command as `npm run attest -- <command> [flags]` or
+`node packages/cli/dist/src/cli.js <command> [flags]`.
 
 Pilot onboarding (no hosted dashboard):
 
