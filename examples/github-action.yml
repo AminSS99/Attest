@@ -1,4 +1,4 @@
-# Attest release-truth gate for pull requests (PRODUCT_PLAN §9 weeks 7–8).
+# Attest release-truth gate for pull requests.
 # Uses the reusable action in .github/actions/attest: local engine, SARIF to
 # GitHub code scanning, release delta + blocking contradictions in the step
 # summary, Passport/Capsule as artifacts, exit 2 to block on confirmed
@@ -11,8 +11,9 @@
 # Attest source (e.g. clone to attest-vendor/) and use
 # `./attest-vendor/.github/actions/attest` instead — copying just the action
 # directory fails clearly at the resolve step. See
-# docs/DESIGN_PARTNER_PILOT.md §4. The Action has not been observed passing on
-# GitHub-hosted runners; only scripts/smoke-action.sh (local) has passed.
+# docs/DESIGN_PARTNER_PILOT.md §4. The public Action reference passed on a
+# hosted runner with synthetic fixtures; see docs/HOSTED_ACTION_RUN.md. A real
+# partner release still needs validation.
 
 name: attest
 

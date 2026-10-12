@@ -2,7 +2,7 @@
   "name": "attest",
   "version": "0.1.0",
   "private": true,
-  "description": "Attest — evidence-backed release readiness for mobile apps. Prove your mobile release matches its promises.",
+  "description": "Compare Android builds, catch mismatches in privacy declarations and reviewer journeys, and generate verifiable release evidence.",
   "type": "module",
   "workspaces": [
     "packages/*"

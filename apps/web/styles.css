@@ -4,3 +4,26 @@
 @media(max-width:760px){.wrap{width:min(100% - 36px,1370px)}.site-header{height:68px}.brand{font-size:21px}.site-header nav{gap:18px}.site-header nav a{font-size:12px}.site-header nav a:nth-child(2){display:none}.hero{display:block;min-height:0;padding-top:77px;padding-bottom:80px}.hero h1{font-size:clamp(48px,11vw,75px)}.hero-aside{margin-top:64px;max-width:400px}.lead{font-size:18px}.example,.artifacts,.availability{padding-top:72px}.split-heading{display:block}.split-heading>p{margin-top:22px;max-width:550px}.section-heading h2{font-size:clamp(39px,8vw,58px)}.evidence-chain{grid-template-columns:1fr 1fr}.chain-column{min-height:240px}.chain-column:nth-child(2){border-right:0}.chain-column:nth-child(3){border-top:1px solid #a9bdb3;border-right:1px solid #a9bdb3}.chain-column:nth-child(4){grid-column:2;border-right:0}.chain-column:nth-child(5){grid-column:1/3;min-height:185px}.chain-column:nth-child(2):after,.chain-column:nth-child(4):after{display:none}.chain-column:nth-child(3):after{display:block}.process{padding-top:79px;padding-bottom:80px}.process-list{grid-template-columns:1fr 1fr;gap:35px 25px}.step-number{margin-bottom:25px}.product-feature,.journey-feature{display:flex;flex-direction:column;align-items:stretch;gap:35px;padding:42px 0 70px}.journey-feature .feature-copy{order:0}.journey-specimen{order:1}.principle{padding-top:85px;padding-bottom:95px}.principle-columns{gap:35px}.faq{display:block;padding-top:80px;padding-bottom:90px}.faq-list{margin-top:40px}.guide-layout{display:block}.guide-nav{position:static;flex-direction:row;flex-wrap:wrap;gap:15px;margin-bottom:35px}}
 @media(max-width:520px){.site-header nav a:first-child{display:none}.site-header nav{gap:0}.hero{padding-top:66px;padding-bottom:70px}.hero h1{font-size:clamp(45px,11.7vw,61px);letter-spacing:-.078em}.hero-actions{gap:25px}.hero-aside{margin-top:52px}.example{padding-bottom:55px}.evidence-chain{display:block}.chain-column{min-height:0;padding:16px 18px 20px;border-right:0!important;border-top:1px solid #a9bdb3}.chain-column:first-child{border-top:0}.chain-column:after{display:none!important}.chain-top{padding-bottom:12px}.build-version{padding-top:15px}.delta-row{padding:10px 0}.decision-result{padding-bottom:25px}.process-list{display:block;margin-top:40px}.process-list li{display:grid;grid-template-columns:38px 1fr;gap:13px;padding:16px 0 25px}.step-number{margin:2px 0 0}.process-list h3{font-size:18px}.passport-specimen{padding:18px 18px 0;transform:none}.specimen-title strong{font-size:25px}.specimen-title b{font-size:21px}.specimen-row{grid-template-columns:1fr;gap:4px}.specimen-end{display:block;line-height:2}.specimen-end span{display:block}.journey-specimen{padding:18px}.journey-specimen li.failed{margin:0 -18px;padding:16px 18px}.journey-specimen li{grid-template-columns:24px 1fr 37px;gap:5px;font-size:11px}.capsule-specimen{padding:18px;font-size:10px}.capsule-line.inner span{font-size:9px;text-align:right}.verify-line{display:block}.verify-line strong{display:block;margin-top:12px}.principle h2{font-size:43px}.principle-columns{display:block}.principle-columns p+p{margin-top:25px}.availability-grid{display:block}.availability-grid>div+div{margin-top:45px}.final-cta h2{font-size:48px}.site-footer{flex-wrap:wrap}.site-footer p{width:100%;order:3}.guide-main{padding-top:60px}.guide-main h1{font-size:49px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button{transition:none}.button:hover{transform:none}}
+
+/* Words and evidence enter once as the reader reaches them. Content is visible without JS. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-text .reveal-word {
+    display: inline-block;
+    transition: opacity 660ms ease, filter 660ms ease, transform 660ms cubic-bezier(.2,.7,.2,1);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--word-index) * 52ms);
+  }
+  .reveal-text.reveal-pending:not(.is-visible) .reveal-word {
+    opacity: 0;
+    filter: blur(11px);
+    transform: translateY(17px);
+  }
+  .reveal-group {
+    transition: opacity 750ms ease, filter 750ms ease, transform 750ms cubic-bezier(.2,.7,.2,1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal-group.reveal-pending:not(.is-visible) {
+    opacity: 0;
+    filter: blur(9px);
+    transform: translateY(16px);
+  }
+}

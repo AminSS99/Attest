@@ -1,7 +1,7 @@
 {
   "name": "attest-cli",
   "version": "0.1.0",
-  "description": "Local, deterministic release-truth engine for mobile apps: AAB/APK inspection, two-build diff, truth-gap rules, Release Passport, Evidence Capsule.",
+  "description": "Compare Android builds, check release declarations and reviewer journeys, and generate offline-verifiable release evidence.",
   "type": "module",
   "bin": {
     "attest": "./dist/src/cli.js"
