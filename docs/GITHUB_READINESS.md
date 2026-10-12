@@ -14,7 +14,7 @@ Ready for developer evaluation as an early open-source preview. Source installat
 
 Local checks on the current source: 73 tests pass; synthetic demo goes from HOLD to SHIP; both Capsules verify (14 and 15 files); Action smoke passes; website build passes. A clean source snapshot also passed `npm ci`, tests, demo, Capsule verification, and website build without existing dependencies or generated files.
 
-Public main's latest observed hosted CI run passed all five jobs: [36121618480](https://github.com/AminSS99/Attest/actions/runs/36121618480). Its inputs were synthetic. New README, branding, and website changes require their own CI run before merging.
+Public main's latest observed hosted CI run passed all five jobs: [36121618480](https://github.com/AminSS99/Attest/actions/runs/36121618480). Its inputs were synthetic. The preparation branch also passed all five hosted jobs, including the website build: [38302819012](https://github.com/AminSS99/Attest/actions/runs/38302819012). These checks validate installation and synthetic fixtures, not a real Android release.
 
 ## Claims to use
 
