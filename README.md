@@ -1,6 +1,23 @@
-# Attest
+<p align="center">
+  <img src="apps/web/attest-logo.png" alt="Attest logo" width="96" height="96" />
+</p>
 
-<img src="apps/web/attest-logo.png" alt="Attest mark" width="56" />
+<h1 align="center">Attest</h1>
+
+<p align="center"><strong>Check Android releases before you ship.</strong></p>
+
+<p align="center">
+  Compare builds. Catch declaration mismatches. Keep verifiable release evidence.
+</p>
+
+<p align="center">
+  <a href="#quickstart">Try the demo</a> ·
+  <a href="#website-and-development">Website preview</a> ·
+  <a href="docs/DESIGN_PARTNER_PILOT.md">Usage guide</a> ·
+  <a href="LICENSE">Apache-2.0</a>
+</p>
+
+![Attest website — compare Android builds and catch release mismatches](docs/images/attest-website.png)
 
 **Compare Android builds, catch mismatches in privacy declarations and reviewer journeys, and generate verifiable release evidence.**
 
