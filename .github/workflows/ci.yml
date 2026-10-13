@@ -26,6 +26,13 @@ jobs:
       - name: Tests
         run: npm test
 
+      - name: Build website and validate reveal script
+        run: |
+          npm run web:build
+          node --check apps/web/reveal.js
+          test -f apps/web/dist/attest-logo.png
+          test -f apps/web/dist/guide.html
+
       - name: Demo (HOLD → SHIP signature)
         run: |
           npm run demo

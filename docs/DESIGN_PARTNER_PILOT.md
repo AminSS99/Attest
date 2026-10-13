@@ -213,11 +213,11 @@ attest journey instructions --journey journeys/reviewer-premium-ai-1.3.0.json \
 > the vendor dir — keep your builds/declarations where they are and only point
 > `uses:` at the vendored action.
 >
-> **Runner status (honest):** this Action has **not** been observed passing on
-> GitHub-hosted runners. What has passed is the local simulation in
-> `scripts/smoke-action.sh` (resolve → validate → build → compare → check →
-> passport → hygiene → gate, plus a reporting-only pass). Treat the first
-> hosted run as an experiment and report back per §6.
+> **Runner status:** the Action passed on GitHub-hosted Ubuntu with synthetic
+> PulseFit fixtures, including the public Action reference; see the
+> [hosted-runner record](HOSTED_ACTION_RUN.md). The local simulation in
+> `scripts/smoke-action.sh` also passed. Neither run proves behavior on this
+> team's real release; record that result separately per §6.
 
 Use the reusable composite action at `.github/actions/attest` (sample in
 `examples/github-action.yml` and `.attest/github-workflow.yml`):

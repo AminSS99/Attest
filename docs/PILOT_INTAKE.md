@@ -37,5 +37,6 @@ fixtures must not be quoted as pilot results.
    Twin if a device is provided) and records results in `PILOT_SCORECARD.md`
    under the matching team block, clearly separated from demo observations.
 2. Only issues actually uncovered by that run get fixed; no new features.
-3. No claim of five pilots, repeat usage, or a GitHub-hosted Action run is
-   made until those events occur.
+3. No claim of five pilots or repeat usage is made until those events occur.
+   The [hosted Action validation](HOSTED_ACTION_RUN.md) used synthetic fixtures,
+   not this team's release.
