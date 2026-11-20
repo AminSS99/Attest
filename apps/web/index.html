@@ -3,18 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f8f8f4" />
     <meta name="description" content="Compare Android builds, catch mismatches in privacy declarations and reviewer journeys, and generate verifiable release evidence." />
     <title>Attest — Compare Android builds and catch release mismatches</title>
-    <link rel="icon" type="image/png" href="/attest-logo.png" />
-    <link rel="stylesheet" href="/styles.css?v=3" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#f8f8f4" />
+    <link rel="canonical" href="https://attest-ruby.vercel.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Attest" />
+    <meta property="og:title" content="Attest — Check Android releases before you ship" />
+    <meta property="og:description" content="Compare Android builds, catch privacy-declaration mismatches, and keep verifiable release evidence. Open source, runs locally, and in your browser." />
+    <meta property="og:url" content="https://attest-ruby.vercel.app/" />
+    <meta property="og:image" content="https://attest-ruby.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Attest: check Android releases before you ship." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Attest — Check Android releases before you ship" />
+    <meta name="twitter:description" content="Compare Android builds, catch privacy-declaration mismatches, and keep verifiable release evidence. Open source, runs locally, and in your browser." />
+    <meta name="twitter:image" content="https://attest-ruby.vercel.app/og-image.png" />
+    <link rel="stylesheet" href="/styles.css?v=6" />
     <script src="/reveal.js" defer></script>
+    <script src="/try.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header wrap">
       <a class="brand" href="/" aria-label="Attest home"><img class="brand-mark" src="/attest-logo.png" alt="" width="30" height="30" /><span>Attest</span></a>
       <nav aria-label="Main navigation">
+        <a href="#watch">Watch</a>
+        <a href="#try">Try it</a>
         <a href="#how-it-works">How it works</a>
         <a href="#artifacts">The evidence</a>
         <a href="/guide.html">Local guide <span aria-hidden="true">↗</span></a>
@@ -37,6 +58,67 @@
           <div class="aside-rule"></div>
           <span class="aside-meta">Android · local CLI · open source core</span>
         </aside>
+      </section>
+
+      <section class="watch section-rule" id="watch" aria-labelledby="watch-title">
+        <div class="wrap">
+          <div class="section-heading split-heading">
+            <div>
+              <span class="section-index">WATCH — 32 SECONDS</span>
+              <h2 id="watch-title">From changed build<br />to sealed evidence.</h2>
+            </div>
+            <p>The synthetic PulseFit release, end to end: diff, findings, a HOLD that becomes a SHIP, and a Capsule verified offline. Made with Remotion from the real CLI output.</p>
+          </div>
+          <video class="watch-video" controls preload="metadata" playsinline poster="/video-poster.jpg" aria-label="Attest demo video">
+            <source src="/attest-demo.mp4" type="video/mp4" />
+            <a href="/attest-demo.mp4">Download the demo video</a>
+          </video>
+        </div>
+      </section>
+
+      <section class="try section-rule" id="try" aria-labelledby="try-title">
+        <div class="wrap">
+          <div class="section-heading split-heading">
+            <div>
+              <span class="section-index">TRY IT — NOTHING LEAVES YOUR BROWSER</span>
+              <h2 id="try-title">Drop two builds.<br />Get a verdict.</h2>
+            </div>
+            <p>Attest runs entirely in this page. Your APKs are read in memory by the same inspection and rules code as the CLI, and are never uploaded. Add a Data Safety JSON to check declarations.</p>
+          </div>
+
+          <form class="try-form" id="try-form" novalidate>
+            <label class="drop" id="drop-base">
+              <input type="file" name="base" accept=".apk,.aab" />
+              <span class="drop-label">Last shipped build</span>
+              <span class="drop-file" data-empty="Drop or choose an .apk / .aab">Drop or choose an .apk / .aab</span>
+            </label>
+            <label class="drop" id="drop-candidate">
+              <input type="file" name="candidate" accept=".apk,.aab" />
+              <span class="drop-label">Release candidate</span>
+              <span class="drop-file" data-empty="Drop or choose an .apk / .aab">Drop or choose an .apk / .aab</span>
+            </label>
+            <label class="drop drop-optional" id="drop-ds">
+              <input type="file" name="dataSafety" accept=".json,application/json" />
+              <span class="drop-label">Data Safety answers <em>optional</em></span>
+              <span class="drop-file" data-empty="Drop or choose a .json file">Drop or choose a .json file</span>
+            </label>
+            <div class="try-actions">
+              <button class="button button-dark" type="submit" id="try-run">Compare builds <span aria-hidden="true">↘</span></button>
+              <button class="text-link try-sample" type="button" id="try-sample">or run the synthetic PulseFit sample</button>
+            </div>
+          </form>
+
+          <p class="try-status" id="try-status" role="status" aria-live="polite"></p>
+
+          <div class="try-result" id="try-result" hidden>
+            <div class="try-summary">
+              <div class="verdict" id="try-verdict"></div>
+              <dl class="try-stats" id="try-stats"></dl>
+            </div>
+            <iframe id="try-frame" title="Release Passport" sandbox="" loading="lazy"></iframe>
+            <p class="try-note"><a href="#" id="try-download" download="passport.json">Download passport.json</a> · Recommendation only; a person makes the final decision. Use the CLI to seal a verifiable Evidence Capsule.</p>
+          </div>
+        </div>
       </section>
 
       <section class="example section-rule" aria-labelledby="example-title">
@@ -170,5 +252,9 @@
       <section class="final-cta" aria-labelledby="cta-title"><div class="wrap"><span class="section-index">START WITH THE LOCAL CLI</span><h2 id="cta-title">Give the next release<br />a record worth keeping.</h2><p>Clone the open-source core, run the synthetic PulseFit demo, then compare your own Android builds.</p><div class="hero-actions"><a class="button button-light" href="https://github.com/AminSS99/Attest">Get Attest on GitHub <span aria-hidden="true">↗</span></a><a class="text-link light-link" href="/guide.html">Read the local guide <span aria-hidden="true">↗</span></a></div></div></section>
     </main>
     <footer class="site-footer wrap"><a class="brand" href="/" aria-label="Attest home"><img class="brand-mark" src="/attest-logo.png" alt="" width="30" height="30" /><span>Attest</span></a><p>Evidence-backed release readiness for Android.</p><a href="#main">Back to top ↑</a></footer>
+    <a class="snap-credit" href="https://www.snapsolve.ink/">
+      <span>Made by</span>
+      <span class="snap-credit__wordmark">SnapSolve</span>
+    </a>
   </body>
 </html>

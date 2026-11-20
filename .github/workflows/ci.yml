@@ -32,6 +32,11 @@ jobs:
           node --check apps/web/reveal.js
           test -f apps/web/dist/attest-logo.png
           test -f apps/web/dist/guide.html
+          test -f apps/web/dist/analyzer.worker.js
+          test -f apps/web/dist/favicon.ico
+          test -f apps/web/dist/site.webmanifest
+          test -f apps/web/dist/attest-demo.mp4
+          test -f apps/web/dist/demo/pulsefit-1.3.0.apk
 
       - name: Demo (HOLD → SHIP signature)
         run: |

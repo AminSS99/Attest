@@ -20,5 +20,28 @@
   "dependencies": {
     "attest-schema": "0.1.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AminSS99/Attest.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/AminSS99/Attest#readme",
+  "bugs": {
+    "url": "https://github.com/AminSS99/Attest/issues"
+  },
+  "keywords": [
+    "android",
+    "apk",
+    "aab",
+    "release",
+    "privacy",
+    "play-store",
+    "data-safety",
+    "supply-chain",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
 }

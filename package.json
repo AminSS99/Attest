@@ -13,12 +13,16 @@
     "test": "npm run build && node --test packages/cli/dist/test/*.test.js",
     "demo": "npm run build && node packages/cli/dist/examples/demo.js",
     "attest": "node packages/cli/dist/src/cli.js",
-    "web:dev": "node apps/web/scripts/serve.mjs",
-    "web:build": "node apps/web/scripts/build.mjs"
+    "web:dev": "node apps/web/scripts/bundle.mjs && node apps/web/scripts/serve.mjs",
+    "web:build": "node apps/web/scripts/bundle.mjs && node apps/web/scripts/build.mjs"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
-    "@types/node": "^22.7.5"
+    "@noble/hashes": "^2.4.0",
+    "@types/node": "^22.7.5",
+    "buffer": "^6.0.3",
+    "esbuild": "^0.28.2",
+    "fflate": "^0.8.3",
+    "typescript": "^5.6.3"
   },
   "engines": {
     "node": ">=20"

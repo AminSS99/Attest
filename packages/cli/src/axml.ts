@@ -15,6 +15,7 @@ const RES_XML_END_ELEMENT_TYPE = 0x0103;
 
 const UTF8_FLAG = 1 << 8;
 const NO_INDEX = 0xffffffff;
+const ANDROID_NS = 'http://schemas.android.com/apk/res/android';
 
 export class AxmlError extends Error {}
 
@@ -173,12 +174,18 @@ function readStartElement(
     // attributeStart is relative to ResXMLTree_attrExt, which begins at off + 16
     // (after the 8-byte chunk header + lineNumber + comment).
     const a = off + 16 + attrStart + i * attrSize;
+    const attrNsIdx = buf.readUInt32LE(a);
     const attrNameIdx = buf.readUInt32LE(a + 4);
     const rawValueIdx = buf.readUInt32LE(a + 8);
     const dataType = buf.readUInt8(a + 15);
     const data = buf.readUInt32LE(a + 16);
 
     let attrName = attrNameIdx === NO_INDEX ? '' : strings[attrNameIdx] ?? '';
+    // aapt2 stores "versionCode" plus the android namespace URI rather than the
+    // literal "android:versionCode"; normalize so lookups work on real APKs.
+    if (attrName !== '' && !attrName.includes(':') && attrNsIdx !== NO_INDEX && strings[attrNsIdx] === ANDROID_NS) {
+      attrName = `android:${attrName}`;
+    }
     if (attrName === '') {
       const resId = attrNameIdx !== NO_INDEX ? resourceMap[attrNameIdx] : undefined;
       if (resId !== undefined && resId !== 0) {

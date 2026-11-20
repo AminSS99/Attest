@@ -1,0 +1,6 @@
+apps/video
+attest-out
+docs
+.github
+**/node_modules
+**/.DS_Store

@@ -23,7 +23,7 @@ export const SDK_SIGNATURES: readonly SdkSignature[] = [
   { id: 'com.google.firebase.messaging', vendor: 'Google', name: 'Firebase Cloud Messaging', packages: ['com/google/firebase/messaging'] },
   { id: 'com.google.firebase.core', vendor: 'Google', name: 'Firebase Core', packages: ['com/google/firebase'] },
   { id: 'com.google.android.gms.ads', vendor: 'Google', name: 'Google Mobile Ads (AdMob)', packages: ['com/google/android/gms/ads'] },
-  { id: 'com.facebook.sdk', vendor: 'Meta', name: 'Facebook SDK', packages: ['com/facebook'] },
+  { id: 'com.facebook.sdk', vendor: 'Meta', name: 'Facebook SDK', packages: ['com/facebook/appevents', 'com/facebook/login', 'com/facebook/share', 'com/facebook/internal'] },
   { id: 'com.amplitude', vendor: 'Amplitude', name: 'Amplitude Analytics', packages: ['com/amplitude'] },
   { id: 'io.sentry', vendor: 'Sentry', name: 'Sentry', packages: ['io/sentry'] },
   { id: 'com.mixpanel', vendor: 'Mixpanel', name: 'Mixpanel', packages: ['com/mixpanel'] },
@@ -87,6 +87,21 @@ const IGNORED_HOST_SUFFIXES = [
   'iana.org',
 ];
 
+/**
+ * Top-level domains accepted for destinations. Binary strings contain prose and
+ * code fragments such as "https://www.css" or "www.language"; requiring a real
+ * TLD keeps those out of findings. Any two-letter country code is accepted.
+ */
+const GENERIC_TLDS = new Set([
+  'com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'mobi',
+  'app', 'dev', 'cloud', 'online', 'tech', 'xyz', 'shop', 'store', 'site',
+]);
+
+function hasPlausibleTld(host: string): boolean {
+  const tld = host.slice(host.lastIndexOf('.') + 1);
+  return /^[a-z]{2}$/.test(tld) || GENERIC_TLDS.has(tld);
+}
+
 /** Extract candidate network destination hosts from DEX strings. */
 export function extractDomains(dexStrings: Iterable<string>): string[] {
   const hosts = new Set<string>();
@@ -96,6 +111,7 @@ export function extractDomains(dexStrings: Iterable<string>): string[] {
     let m: RegExpExecArray | null;
     while ((m = URL_HOST_RE.exec(s)) !== null) {
       const host = m[1]!.toLowerCase();
+      if (!hasPlausibleTld(host)) continue;
       if (IGNORED_HOST_SUFFIXES.some((sfx) => host === sfx || host.endsWith('.' + sfx))) continue;
       hosts.add(host);
     }

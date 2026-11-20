@@ -24,6 +24,12 @@ describe('DEX string table', () => {
     assert.deepEqual(sdks[0]!.matchedPackages, ['com/amplitude']);
   });
 
+  it('does not mistake other com.facebook libraries for the Facebook SDK', () => {
+    assert.deepEqual(detectSdks(['Lcom/facebook/shimmer/ShimmerFrameLayout;', 'Lcom/facebook/soloader/SoLoader;']), []);
+    const sdks = detectSdks(['Lcom/facebook/appevents/AppEventsLogger;']);
+    assert.equal(sdks[0]!.id, 'com.facebook.sdk');
+  });
+
   it('extracts destination hosts and ignores schema/DTD noise', () => {
     const hosts = extractDomains([
       'https://metrics.amplitude.com/collect?app=1',
@@ -31,6 +37,15 @@ describe('DEX string table', () => {
       'https://schemas.android.com/apk/res/android',
     ]);
     assert.deepEqual(hosts, ['metrics.amplitude.com']);
+  });
+
+  it('drops prose and code fragments that only look like hosts', () => {
+    const hosts = extractDomains([
+      'see https://www.css and https://www.a for details',
+      'https://www.language https://www.hortcut/x',
+      'https://api.pulsefit.app/v1 https://cdn.example.co.uk',
+    ]);
+    assert.deepEqual(hosts, ['api.pulsefit.app', 'cdn.example.co.uk']);
   });
 
   it('rejects non-dex bytes', () => {

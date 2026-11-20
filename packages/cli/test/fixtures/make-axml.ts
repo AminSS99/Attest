@@ -13,8 +13,22 @@ export interface AxmlSpecElement {
 }
 
 const NO_INDEX = 0xffffffff;
+const ANDROID_NS = 'http://schemas.android.com/apk/res/android';
 
-export function buildAxml(root: AxmlSpecElement): Buffer {
+export interface BuildAxmlOptions {
+  /**
+   * Encode attributes the way aapt2 does in real APKs: the pool holds the bare
+   * name ("versionCode") and the attribute carries the android namespace URI,
+   * instead of the literal string "android:versionCode".
+   */
+  aapt?: boolean;
+}
+
+export function buildAxml(root: AxmlSpecElement, options: BuildAxmlOptions = {}): Buffer {
+  const nameOf = (k: string): { name: string; ns: boolean } =>
+    options.aapt && k.startsWith('android:')
+      ? { name: k.slice('android:'.length), ns: true }
+      : { name: k, ns: false };
   // 1. String pool: element names, attribute names, string attribute values.
   const pool = new Map<string, number>();
   const intern = (s: string): number => {
@@ -32,7 +46,9 @@ export function buildAxml(root: AxmlSpecElement): Buffer {
   walk(root, (el) => {
     intern(el.name);
     for (const [k, v] of Object.entries(el.attrs ?? {})) {
-      intern(k);
+      const n = nameOf(k);
+      intern(n.name);
+      if (n.ns) intern(ANDROID_NS);
       if (typeof v === 'string') intern(v);
     }
   });
@@ -57,8 +73,9 @@ export function buildAxml(root: AxmlSpecElement): Buffer {
     chunk.writeUInt16LE(attrs.length, 28);
     attrs.forEach(([name, value], i) => {
       const a = 16 + attrStart + i * attrSize;
-      chunk.writeUInt32LE(NO_INDEX, a); // ns
-      chunk.writeUInt32LE(intern(name), a + 4);
+      const n = nameOf(name);
+      chunk.writeUInt32LE(n.ns ? intern(ANDROID_NS) : NO_INDEX, a); // ns
+      chunk.writeUInt32LE(intern(n.name), a + 4);
       chunk.writeUInt16LE(8, a + 12); // typed value size
       if (typeof value === 'string') {
         chunk.writeUInt32LE(intern(value), a + 8); // rawValue

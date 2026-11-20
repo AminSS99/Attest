@@ -45,7 +45,9 @@ export function inspectArtifact(bytes: Buffer, fileName: string): BuildFacts {
   const dexStrings: string[] = [];
   for (const entry of zip.match((n) => n.endsWith('.dex'))) {
     try {
-      dexStrings.push(...extractDexStrings(zip.read(entry)));
+      // Loop instead of push(...strings): a large DEX has tens of thousands of strings,
+      // and spreading them as arguments overflows the call stack in some runtimes.
+      for (const str of extractDexStrings(zip.read(entry))) dexStrings.push(str);
     } catch {
       // A non-parseable dex must not abort the whole inspection; other evidence stays intact.
     }

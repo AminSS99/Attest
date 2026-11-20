@@ -6,7 +6,7 @@
 
 This is the product source of truth and the handoff for the next person or AI working on Attest. Treat observed results, proposed features, and unverified claims as different things. Recheck repository and external status before changing this file.
 
-The [original detailed vision](docs/PRODUCT_VISION_ARCHIVE.md) is kept for historical context. Section-number references in older source comments point to that archived version; its old status and timeline are not current commitments.
+The [original detailed vision](docs/internal/PRODUCT_VISION_ARCHIVE.md) is kept for historical context. Section-number references in older source comments point to that archived version; its old status and timeline are not current commitments.
 
 ## 1. The product in one minute
 
@@ -34,11 +34,11 @@ The signature synthetic demonstration is PulseFit 1.2.0 → 1.3.0: Amplitude, `C
 | Android inspection | APK/AAB facts, two-build diff, five deterministic truth-gap rules | CLI source and tests; `npm test` |
 | Reviewer Twin | Human-guided ADB recording, comparison, first changed/failed step, instructions | [`packages/cli/src/journey.ts`](packages/cli/src/journey.ts) |
 | Decision record | HTML/JSON Passport, exceptions, human ship/hold, immutable revisions, sealed Capsule, offline verifier | CLI source and demo |
-| CI | Reusable GitHub Action, SARIF, summary, artifacts, configurable gate | [Action](.github/actions/attest), [hosted-runner record](docs/HOSTED_ACTION_RUN.md) |
+| CI | Reusable GitHub Action, SARIF, summary, artifacts, configurable gate | [Action](.github/actions/attest), [hosted-runner record](docs/internal/HOSTED_ACTION_RUN.md) |
 | Website | Static public-facing site and guide, previewed locally; no deployment configured | [`apps/web`](apps/web), `npm run web:dev` |
 | Distribution | Cloneable public source; no published npm package | [README](README.md) |
 
-The Action has passed on GitHub-hosted Ubuntu, including invocation through the public Action reference, **using synthetic PulseFit fixtures**. A local external-directory tarball rehearsal also passed. These prove distribution mechanics, not usefulness on a real release. See [hosted validation](docs/HOSTED_ACTION_RUN.md) and [internal dry run](docs/INTERNAL_DRY_RUN.md); the older dry-run note saying the Action had never run on a hosted runner was superseded by the hosted validation.
+The Action has passed on GitHub-hosted Ubuntu, including invocation through the public Action reference, **using synthetic PulseFit fixtures**. A local external-directory tarball rehearsal also passed. These prove distribution mechanics, not usefulness on a real release. See [hosted validation](docs/internal/HOSTED_ACTION_RUN.md) and [internal dry run](docs/internal/INTERNAL_DRY_RUN.md); the older dry-run note saying the Action had never run on a hosted runner was superseded by the hosted validation.
 
 **Still absent:** a real Android design-partner run; measured setup time, catches, and misses; iOS inspection; a native macOS app; a hosted dashboard or release history; fully automated device journeys; and an npm release. Do not imply any of these exist. Store approval is never guaranteed.
 
@@ -65,7 +65,7 @@ Keep the current monorepo while the core and website evolve together. GitHub's �
 
 ## 5. Next milestone: real-release proof
 
-The next unit of progress is **one authorized Android release**, not another speculative feature. No suitable real base/candidate pair has been provided yet. Use [pilot intake](docs/PILOT_INTAKE.md), [pilot kit](docs/DESIGN_PARTNER_PILOT.md), and [scorecard](docs/PILOT_SCORECARD.md).
+The next unit of progress is **one authorized Android release**, not another speculative feature. No suitable real base/candidate pair has been provided yet. Use [pilot intake](docs/internal/PILOT_INTAKE.md), [pilot kit](docs/internal/DESIGN_PARTNER_PILOT.md), and [scorecard](docs/internal/PILOT_SCORECARD.md).
 
 ### Inputs and ownership
 
@@ -109,7 +109,7 @@ Pricing and a hosted commercial model remain hypotheses. Do not create signup, p
 
 **Start here, in order:**
 
-1. Read this file, [README](README.md), [pilot intake](docs/PILOT_INTAKE.md), [hosted-runner record](docs/HOSTED_ACTION_RUN.md), and the CLI `help`. Inspect `git status` first; preserve all uncommitted work.
+1. Read this file, [README](README.md), [pilot intake](docs/internal/PILOT_INTAKE.md), [hosted-runner record](docs/internal/HOSTED_ACTION_RUN.md), and the CLI `help`. Inspect `git status` first; preserve all uncommitted work.
 2. Establish the baseline: run `npm ci` if needed, `npm test`, `npm run demo`, `npm run attest -- verify attest-out/demo/capsule`, and `npm run web:build`. Record exact commands and results. A demo passing is not a pilot.
 3. Check whether an authorized design-partner input set exists. If it does, execute §5, using the pilot kit. If it does not, complete useful preparation that needs no private inputs, then request the missing artifacts and authorization from the owning team. Do not claim the milestone is complete while blocked.
 4. Keep a concise work log: current state, changed files, evidence, checks, open blockers, and next action. Update this plan when a milestone is actually verified. Mark hypotheses and synthetic demonstrations visibly.

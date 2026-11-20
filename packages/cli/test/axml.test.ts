@@ -58,3 +58,26 @@ describe('parseAxml', () => {
     assert.throws(() => parseAxml(Buffer.from('<manifest/>')), AxmlError);
   });
 });
+
+describe('parseAxml on aapt2-style manifests', () => {
+  // Real APKs store bare attribute names plus the android namespace URI.
+  const doc = buildAxml(
+    {
+      name: 'manifest',
+      attrs: { package: 'org.example', 'android:versionCode': 7, 'android:versionName': '0.7.0' },
+      children: [
+        { name: 'uses-sdk', attrs: { 'android:minSdkVersion': 21, 'android:targetSdkVersion': 34 } },
+        { name: 'uses-permission', attrs: { 'android:name': 'android.permission.CAMERA' } },
+      ],
+    },
+    { aapt: true },
+  );
+
+  it('resolves namespaced attributes to android:-prefixed names', () => {
+    const root = parseAxml(doc);
+    assert.equal(root.get('package'), 'org.example');
+    assert.equal(root.get('android:versionName'), '0.7.0');
+    assert.equal(root.children[0]!.get('android:targetSdkVersion'), '34');
+    assert.equal(root.children[1]!.get('android:name'), 'android.permission.CAMERA');
+  });
+});

@@ -80,3 +80,21 @@ describe('inspectArtifact', () => {
     );
   });
 });
+
+describe('inspectArtifact on a very large DEX', () => {
+  it('keeps evidence when a DEX has hundreds of thousands of strings', () => {
+    // push(...strings) overflows the call stack at this size; the evidence must survive.
+    const filler = Array.from({ length: 400_000 }, (_, i) => `Lfiller/c${i};`);
+    const facts = inspectArtifact(
+      buildArtifact({
+        ...BASE_SPEC,
+        sdkPackages: ['com/amplitude'],
+        urls: ['https://metrics.amplitude.com/collect'],
+        extraStrings: filler,
+      }),
+      'big.apk',
+    );
+    assert.ok(facts.sdks.some((x) => x.id === 'com.amplitude'));
+    assert.ok(facts.domains.some((d) => d.host === 'metrics.amplitude.com'));
+  });
+});
