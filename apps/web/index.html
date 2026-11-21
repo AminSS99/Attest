@@ -25,8 +25,9 @@
     <meta name="twitter:title" content="Attest — Check Android releases before you ship" />
     <meta name="twitter:description" content="Compare Android builds, catch privacy-declaration mismatches, and keep verifiable release evidence. Open source, runs locally, and in your browser." />
     <meta name="twitter:image" content="https://attest-ruby.vercel.app/og-image.png" />
-    <link rel="stylesheet" href="/styles.css?v=6" />
+    <link rel="stylesheet" href="/styles.css?v=7" />
     <script src="/reveal.js" defer></script>
+    <script src="/watch.js" defer></script>
     <script src="/try.js" defer></script>
   </head>
   <body>
@@ -69,10 +70,73 @@
             </div>
             <p>The synthetic PulseFit release, end to end: diff, findings, a HOLD that becomes a SHIP, and a Capsule verified offline. Made with Remotion from the real CLI output.</p>
           </div>
-          <video class="watch-video" controls preload="metadata" playsinline poster="/video-poster.jpg" aria-label="Attest demo video">
-            <source src="/attest-demo.mp4" type="video/mp4" />
-            <a href="/attest-demo.mp4">Download the demo video</a>
-          </video>
+          <div class="watch-frame" id="watch-frame" tabindex="0" aria-label="Attest demo video player">
+            <div class="watch-chrome">
+              <div class="watch-chrome-left">
+                <span class="watch-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="watch-label">ATTEST / PULSEFIT 1.2.0 → 1.3.0 · REAL CLI OUTPUT</span>
+              </div>
+              <div class="watch-chrome-right">
+                <span class="watch-badge" id="watch-badge">
+                  <span class="watch-dot" aria-hidden="true"></span>
+                  <span id="watch-badge-text">READY</span>
+                </span>
+                <span class="watch-duration">00:32</span>
+              </div>
+            </div>
+
+            <div class="watch-stage" id="watch-stage">
+              <video id="watch-video" class="watch-video" controls muted loop playsinline preload="metadata" poster="/video-poster.jpg" aria-label="Attest demo video">
+                <source src="/attest-demo.mp4" type="video/mp4" />
+                <a href="/attest-demo.mp4">Download the demo video</a>
+              </video>
+
+              <button type="button" class="watch-sound-pill" id="watch-sound-pill" hidden aria-label="Unmute demo video">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                <span id="watch-sound-label">Muted · click for sound</span>
+              </button>
+
+              <button type="button" class="watch-play-overlay" id="watch-play-overlay" hidden aria-label="Play demo video">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+              </button>
+            </div>
+
+            <div class="watch-controls" id="watch-controls" hidden>
+              <button type="button" class="watch-btn" id="watch-toggle" aria-label="Play video">
+                <svg class="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                <svg class="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" hidden aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+
+              <div class="watch-progress-wrap">
+                <div class="watch-progress" id="watch-progress" role="slider" tabindex="0" aria-label="Seek video" aria-valuemin="0" aria-valuemax="32" aria-valuenow="0">
+                  <div class="watch-progress-track">
+                    <div class="watch-progress-fill" id="watch-progress-fill"></div>
+                  </div>
+                  <span class="watch-progress-tip" id="watch-progress-tip" aria-hidden="true">0:00</span>
+                </div>
+              </div>
+
+              <span class="watch-time" id="watch-time">0:00 / 0:32</span>
+
+              <button type="button" class="watch-btn" id="watch-mute" aria-label="Unmute video">
+                <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                <svg class="icon-sound" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              </button>
+
+              <button type="button" class="watch-btn" id="watch-fullscreen" aria-label="Fullscreen video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              </button>
+            </div>
+
+            <div class="watch-chapters" id="watch-chapters" hidden aria-label="Video chapters">
+              <button type="button" class="watch-chapter is-active" data-time="0"><span>01</span>Hook<em>0:00</em></button>
+              <button type="button" class="watch-chapter" data-time="3.1"><span>02</span>Build delta<em>0:03</em></button>
+              <button type="button" class="watch-chapter" data-time="7.7"><span>03</span>Findings<em>0:08</em></button>
+              <button type="button" class="watch-chapter" data-time="16.3"><span>04</span>HOLD → SHIP<em>0:16</em></button>
+              <button type="button" class="watch-chapter" data-time="20.9"><span>05</span>Capsule<em>0:21</em></button>
+              <button type="button" class="watch-chapter" data-time="24.5"><span>06</span>Browser drop<em>0:25</em></button>
+            </div>
+          </div>
         </div>
       </section>
 

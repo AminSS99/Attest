@@ -30,6 +30,8 @@ jobs:
         run: |
           npm run web:build
           node --check apps/web/reveal.js
+          node --check apps/web/watch.js
+          test -f apps/web/dist/watch.js
           test -f apps/web/dist/attest-logo.png
           test -f apps/web/dist/guide.html
           test -f apps/web/dist/analyzer.worker.js

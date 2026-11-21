@@ -6,7 +6,7 @@ if (!reducedMotion.matches && 'IntersectionObserver' in window) {
   const groups = [...document.querySelectorAll(`
     .site-header .brand, .site-header nav,
     main .section-index, main .lead, main .hero-actions, main .hero-aside,
-    main .split-heading > p, main .evidence-chain, main .example-footnote,
+    main .split-heading > p, main .watch-frame, main .evidence-chain, main .example-footnote,
     main .process .section-heading > p, main .process-list li,
     main .feature-copy > p, main .feature-copy > a,
     main .passport-specimen, main .journey-specimen, main .capsule-specimen,

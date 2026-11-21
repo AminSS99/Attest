@@ -7,7 +7,7 @@ const out = join(root, 'dist');
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 const files = [
-  'index.html', 'guide.html', 'styles.css', 'reveal.js', 'try.js',
+  'index.html', 'guide.html', 'styles.css', 'reveal.js', 'watch.js', 'try.js',
   'attest-logo.png', 'favicon.ico', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png',
   'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'site.webmanifest',
   'og-image.png', 'video-poster.jpg', 'attest-demo.mp4',
