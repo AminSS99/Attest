@@ -90,7 +90,7 @@ export function parseAxml(buf: Buffer): AxmlElement {
         break;
       }
       case RES_XML_START_ELEMENT_TYPE: {
-        const el = readStartElement(buf, off, strings, resourceMap);
+        const el = readStartElement(buf, off, off + size, strings, resourceMap);
         if (stack.length > 0) stack[stack.length - 1]!.children.push(el);
         else root = el;
         stack.push(el);
@@ -112,6 +112,10 @@ export function parseAxml(buf: Buffer): AxmlElement {
 }
 
 function readStringPool(buf: Buffer, chunkOff: number, headerSize: number, size: number): string[] {
+  const chunkEnd = chunkOff + size;
+  if (size < 28 || headerSize < 28 || chunkOff + headerSize > chunkEnd) {
+    throw new AxmlError('Corrupt AXML string pool header.');
+  }
   const stringCount = buf.readUInt32LE(chunkOff + 8);
   const flags = buf.readUInt32LE(chunkOff + 16);
   const stringsStart = buf.readUInt32LE(chunkOff + 20);
@@ -119,35 +123,43 @@ function readStringPool(buf: Buffer, chunkOff: number, headerSize: number, size:
 
   const offsetsBase = chunkOff + headerSize;
   const dataBase = chunkOff + stringsStart;
-  const chunkEnd = chunkOff + size;
+  if (stringCount > 1_000_000 || offsetsBase + stringCount * 4 > chunkEnd) {
+    throw new AxmlError('Corrupt AXML string pool offset table.');
+  }
   const out: string[] = [];
 
   for (let i = 0; i < stringCount; i++) {
     const rel = buf.readUInt32LE(offsetsBase + i * 4);
     let p = dataBase + rel;
-    if (p >= chunkEnd) {
+    if (p < dataBase || p >= chunkEnd) {
       out.push('');
       continue;
     }
     if (utf8) {
       // u16 length (1–2 bytes), then utf8 byte length (1–2 bytes), then bytes.
+      if (p + 1 > chunkEnd) { out.push(''); continue; }
       let u16len = buf.readUInt8(p)!;
       p += 1;
       if (u16len & 0x80) {
+        if (p + 1 > chunkEnd) { out.push(''); continue; }
         u16len = ((u16len & 0x7f) << 8) | buf.readUInt8(p)!;
         p += 1;
       }
+      if (p + 1 > chunkEnd) { out.push(''); continue; }
       let byteLen = buf.readUInt8(p)!;
       p += 1;
       if (byteLen & 0x80) {
+        if (p + 1 > chunkEnd) { out.push(''); continue; }
         byteLen = ((byteLen & 0x7f) << 8) | buf.readUInt8(p)!;
         p += 1;
       }
       out.push(buf.toString('utf8', p, Math.min(p + byteLen, chunkEnd)));
     } else {
+      if (p + 2 > chunkEnd) { out.push(''); continue; }
       let len = buf.readUInt16LE(p);
       p += 2;
       if (len & 0x8000) {
+        if (p + 2 > chunkEnd) { out.push(''); continue; }
         len = ((len & 0x7fff) << 16) | buf.readUInt16LE(p);
         p += 2;
       }
@@ -160,20 +172,24 @@ function readStringPool(buf: Buffer, chunkOff: number, headerSize: number, size:
 function readStartElement(
   buf: Buffer,
   off: number,
+  chunkEnd: number,
   strings: string[],
   resourceMap: number[],
 ): AxmlElement {
+  if (off + 32 > chunkEnd) throw new AxmlError('Truncated AXML start element.');
   const nameIdx = buf.readUInt32LE(off + 20);
   const name = nameIdx === NO_INDEX ? '' : strings[nameIdx] ?? '';
   const attrStart = buf.readUInt16LE(off + 24);
   const attrSize = buf.readUInt16LE(off + 26) || 20;
   const attrCount = buf.readUInt16LE(off + 28);
+  if (attrSize < 20) throw new AxmlError('Corrupt AXML attribute stride.');
 
   const attributes: AxmlAttribute[] = [];
   for (let i = 0; i < attrCount; i++) {
     // attributeStart is relative to ResXMLTree_attrExt, which begins at off + 16
     // (after the 8-byte chunk header + lineNumber + comment).
     const a = off + 16 + attrStart + i * attrSize;
+    if (a + 20 > chunkEnd) throw new AxmlError('Truncated AXML attribute entry.');
     const attrNsIdx = buf.readUInt32LE(a);
     const attrNameIdx = buf.readUInt32LE(a + 4);
     const rawValueIdx = buf.readUInt32LE(a + 8);

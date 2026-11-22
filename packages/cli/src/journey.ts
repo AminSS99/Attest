@@ -35,6 +35,7 @@ import {
 } from 'attest-schema';
 
 import { esc } from './passport.js';
+import { resolveSafeChild } from './safe-path.js';
 
 export const STEP_RESULTS: readonly StepResult[] = ['pass', 'fail', 'blocked'] as const;
 
@@ -275,9 +276,10 @@ export async function loadJourneyBundle(path: string): Promise<JourneyBundle> {
     for (const rel of step.evidencePaths) {
       if (files[rel]) continue;
       try {
-        files[rel] = await readFile(join(baseDir, rel));
+        const target = resolveSafeChild(baseDir, rel);
+        files[rel] = await readFile(target);
       } catch {
-        // Missing media is reported at render time; the step record still stands.
+        // Missing or unsafe media paths are skipped; the step record still stands.
       }
     }
   }
@@ -743,6 +745,7 @@ export function renderReviewerInstructions(
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:;">
 <title>Reviewer instructions — ${esc(j.title)}</title>
 <style>${INSTRUCTIONS_CSS}</style></head><body>
 <header>

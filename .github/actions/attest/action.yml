@@ -331,19 +331,19 @@ runs:
           if [ -f "$OUT/check.txt" ]; then
             echo "<details><summary>Release delta + findings</summary>"
             echo ""
-            echo '```'
+            echo '`````'
             # check.txt holds only the release delta and finding titles/comparisons —
             # screenshots, credential values, and declaration contents never enter the summary.
-            cat "$OUT/check.txt"
-            echo '```'
+            sed "s/\`\`\`/'''/g" "$OUT/check.txt"
+            echo '`````'
             echo "</details>"
             echo ""
           fi
           if [ -n "$BASELINE" ] && [ -f "$OUT/journey-comparison.txt" ]; then
             echo "### Journey comparison (first changed / failed step)"
-            echo '```'
-            cat "$OUT/journey-comparison.txt"
-            echo '```'
+            echo '`````'
+            sed "s/\`\`\`/'''/g" "$OUT/journey-comparison.txt"
+            echo '`````'
             echo ""
           fi
           echo "<sub>Passport + Evidence Capsule uploaded as workflow artifacts (screenshots and declaration contents stay out of the summary).</sub>"

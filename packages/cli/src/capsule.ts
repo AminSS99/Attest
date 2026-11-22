@@ -18,7 +18,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import {
@@ -34,6 +34,7 @@ import type { JourneyBundle } from './journey.js';
 import { serializeComparison, serializeJourney } from './journey.js';
 import { CLI_VERSION } from './inspect.js';
 import { computePassportId, renderPassportHtml } from './passport.js';
+import { resolveSafeChild } from './safe-path.js';
 
 export const CAPSULE_MANIFEST_NAME = 'capsule-manifest.json';
 
@@ -93,7 +94,7 @@ export async function sealCapsule(dir: string, input: CapsuleInput): Promise<Cap
     ...Object.entries(binaryFiles),
   ];
   for (const [rel, bytes] of allFiles.sort(([a], [b]) => a.localeCompare(b))) {
-    const abs = join(dir, rel);
+    const abs = resolveSafeChild(dir, rel);
     await mkdir(join(abs, '..'), { recursive: true });
     await writeFile(abs, bytes);
     entries.push({ path: rel, sha256: sha256(bytes), bytes: bytes.length });
@@ -144,11 +145,23 @@ export async function verifyCapsule(dir: string): Promise<CapsuleVerification> {
   let checked = 0;
 
   for (const [path, entry] of expected) {
+    let target: string;
+    try {
+      target = resolveSafeChild(dir, path);
+    } catch {
+      errors.push(`Unsafe capsule path "${path}".`);
+      continue;
+    }
     if (!onDisk.has(path)) {
       missing.push(path);
       continue;
     }
-    const actual = sha256(await readFile(join(dir, path)));
+    const st = await lstat(target);
+    if (!st.isFile() || st.isSymbolicLink()) {
+      errors.push(`Refusing non-regular capsule file "${path}".`);
+      continue;
+    }
+    const actual = sha256(await readFile(target));
     checked++;
     if (actual !== entry.sha256) {
       mismatches.push({ path, expected: entry.sha256, actual });
@@ -236,10 +249,11 @@ export async function resealCapsule(
 async function listFiles(dir: string, base = dir): Promise<Set<string>> {
   const out = new Set<string>();
   for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (entry.isSymbolicLink()) continue;
     const abs = join(dir, entry.name);
     if (entry.isDirectory()) {
       for (const f of await listFiles(abs, base)) out.add(f);
-    } else {
+    } else if (entry.isFile()) {
       out.add(relative(base, abs).split('\\').join('/'));
     }
   }

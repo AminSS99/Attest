@@ -64,7 +64,10 @@
     const rec = checkedDeclarations ? String(passport.decision.recommendation).toUpperCase() : 'DELTA ONLY';
     const verdict = $('try-verdict');
     verdict.className = `verdict ${checkedDeclarations ? rec.toLowerCase() : 'delta'}`;
-    verdict.innerHTML = `${rec}<span aria-hidden="true">●</span>`;
+    const dot = document.createElement('span');
+    dot.setAttribute('aria-hidden', 'true');
+    dot.textContent = '●';
+    verdict.replaceChildren(document.createTextNode(rec), dot);
 
     const d = passport.diff;
     const sev = (s) => passport.findings.filter((f) => f.severity === s).length;

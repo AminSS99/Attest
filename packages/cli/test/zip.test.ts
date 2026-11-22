@@ -26,4 +26,22 @@ describe('ZipArchive', () => {
     const zip = new ZipArchive(buildZip([{ name: 'a.txt', data: Buffer.from('a') }]));
     assert.equal(zip.readByName('missing.txt'), undefined);
   });
+
+  it('rejects entries exceeding MAX_ENTRY_BYTES (zip bomb guard)', () => {
+    const raw = buildZip([{ name: 'bomb.dex', data: Buffer.from('x') }]);
+    // Patch central directory uncompressedSize at EOCD offset -> CEN + 24 to 256 MiB.
+    const eocd = raw.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    const cenOff = raw.readUInt32LE(eocd + 16);
+    raw.writeUInt32LE(256 * 1024 * 1024, cenOff + 24);
+    const zip = new ZipArchive(raw);
+    const entry = zip.entries.get('bomb.dex')!;
+    assert.throws(() => zip.read(entry), ZipError);
+  });
+
+  it('rejects corrupt central directory counts with ZipError', () => {
+    const raw = buildZip([{ name: 'a.txt', data: Buffer.from('a') }]);
+    const eocd = raw.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    raw.writeUInt16LE(99, eocd + 10);
+    assert.throws(() => new ZipArchive(raw), ZipError);
+  });
 });

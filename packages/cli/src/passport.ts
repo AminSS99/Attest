@@ -114,7 +114,8 @@ export function esc(s: string): string {
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 export function shortSha(sha: string): string {
@@ -259,6 +260,7 @@ export function renderPassportHtml(p: ReleasePassport): string {
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">
 <title>Release Passport — ${esc(p.app.packageName)} ${esc(p.candidate.versionName ?? '')}</title>
 <style>
 :root{font-family:-apple-system,"SF Pro Text",Helvetica,Arial,sans-serif;color:#16232e}

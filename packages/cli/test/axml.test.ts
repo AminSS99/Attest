@@ -57,6 +57,13 @@ describe('parseAxml', () => {
   it('rejects plain XML with a clear error', () => {
     assert.throws(() => parseAxml(Buffer.from('<manifest/>')), AxmlError);
   });
+
+  it('rejects corrupt string pool counts with AxmlError', () => {
+    const bad = Buffer.from(doc);
+    // Document header is 8 bytes; string pool chunk starts at offset 8, stringCount at +8.
+    bad.writeUInt32LE(0x00100000, 8 + 8);
+    assert.throws(() => parseAxml(bad), AxmlError);
+  });
 });
 
 describe('parseAxml on aapt2-style manifests', () => {

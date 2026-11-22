@@ -13,6 +13,8 @@ const EOCD_SIG = 0x06054b50;
 const CEN_SIG = 0x02014b50;
 const LOC_SIG = 0x04034b50;
 const MAX_COMMENT = 65536;
+export const MAX_ENTRY_BYTES = 128 * 1024 * 1024;
+const MAX_ENTRIES = 65_535;
 
 export interface ZipEntry {
   name: string;
@@ -50,21 +52,29 @@ export class ZipArchive {
   read(entry: ZipEntry): Buffer {
     const buf = this.buffer;
     const off = entry.localHeaderOffset;
-    if (off + 30 > buf.length || buf.readUInt32LE(off) !== LOC_SIG) {
+    if (off < 0 || off + 30 > buf.length || buf.readUInt32LE(off) !== LOC_SIG) {
       throw new ZipError(`Bad local header for "${entry.name}".`);
+    }
+    if (entry.uncompressedSize > MAX_ENTRY_BYTES || entry.compressedSize > MAX_ENTRY_BYTES) {
+      throw new ZipError(`Entry "${entry.name}" exceeds maximum supported size.`);
     }
     const nameLen = buf.readUInt16LE(off + 26);
     const extraLen = buf.readUInt16LE(off + 28);
     const dataStart = off + 30 + nameLen + extraLen;
     const dataEnd = dataStart + entry.compressedSize;
-    if (dataEnd > buf.length) throw new ZipError(`Truncated data for "${entry.name}".`);
+    if (dataStart < off + 30 || dataEnd > buf.length) {
+      throw new ZipError(`Truncated data for "${entry.name}".`);
+    }
     const raw = buf.subarray(dataStart, dataEnd);
     switch (entry.method) {
       case 0:
         return Buffer.from(raw);
       case 8:
         try {
-          return inflateRawSync(raw, { finishFlush: 4 /* Z_SYNC_FLUSH-safe */ });
+          return inflateRawSync(raw, {
+            finishFlush: 4 /* Z_SYNC_FLUSH-safe */,
+            maxOutputLength: MAX_ENTRY_BYTES,
+          });
         } catch (err) {
           throw new ZipError(`Failed to inflate "${entry.name}": ${(err as Error).message}`);
         }
@@ -92,13 +102,16 @@ function findEocd(buf: Buffer): number {
 function readCentralDirectory(buf: Buffer): ZipEntry[] {
   const eocd = findEocd(buf);
   const total = buf.readUInt16LE(eocd + 10);
-  if (total === 0xffff) {
+  if (total === 0xffff || total > MAX_ENTRIES) {
     throw new ZipError('ZIP64 archives are not supported yet.');
   }
   let off = buf.readUInt32LE(eocd + 16);
+  if (off > eocd) {
+    throw new ZipError('Corrupt central directory.');
+  }
   const entries: ZipEntry[] = [];
   for (let i = 0; i < total; i++) {
-    if (off + 46 > buf.length || buf.readUInt32LE(off) !== CEN_SIG) {
+    if (off + 46 > eocd || buf.readUInt32LE(off) !== CEN_SIG) {
       throw new ZipError('Corrupt central directory.');
     }
     const flags = buf.readUInt16LE(off + 8);
@@ -107,6 +120,10 @@ function readCentralDirectory(buf: Buffer): ZipEntry[] {
     const nameLen = buf.readUInt16LE(off + 28);
     const extraLen = buf.readUInt16LE(off + 30);
     const commentLen = buf.readUInt16LE(off + 32);
+    const nextOff = off + 46 + nameLen + extraLen + commentLen;
+    if (nextOff > eocd) {
+      throw new ZipError('Corrupt central directory.');
+    }
     const utf8 = (flags & 0x800) !== 0;
     const nameRaw = buf.subarray(off + 46, off + 46 + nameLen);
     const name = utf8 ? nameRaw.toString('utf8') : nameRaw.toString('latin1');
@@ -119,7 +136,7 @@ function readCentralDirectory(buf: Buffer): ZipEntry[] {
       modTime: buf.readUInt16LE(off + 12),
       modDate: buf.readUInt16LE(off + 14),
     });
-    off += 46 + nameLen + extraLen + commentLen;
+    off = nextOff;
   }
   return entries;
 }

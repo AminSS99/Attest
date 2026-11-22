@@ -22,7 +22,14 @@ const server = createServer(async (request, response) => {
     const info = await stat(file);
     if (!info.isFile()) throw new Error('Not found');
     const body = await readFile(file);
-    response.writeHead(200, { 'content-type': types[extname(file)] || 'application/octet-stream', 'x-content-type-options': 'nosniff' });
+    response.writeHead(200, {
+      'content-type': types[extname(file)] || 'application/octet-stream',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'SAMEORIGIN',
+      'referrer-policy': 'strict-origin-when-cross-origin',
+      'permissions-policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+      'content-security-policy': "default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'",
+    });
     response.end(request.method === 'HEAD' ? undefined : body);
   } catch {
     response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });

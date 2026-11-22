@@ -320,5 +320,28 @@ describe('Reviewer Twin e2e: record → compare → passport → capsule → rep
       redactions: ['reviewer credentials', 'test account identities'],
     });
     assert.equal((await verifyCapsule(fixedCapsuleDir)).ok, true);
+
+    // 8. Path traversal in capsule manifests and journey evidence paths is rejected/ignored.
+    const manifestPath = join(fixedCapsuleDir, 'capsule-manifest.json');
+    const tamperedManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    tamperedManifest.files.push({
+      path: '../outside.txt',
+      sha256: '0'.repeat(64),
+      bytes: 4,
+    });
+    await writeFile(manifestPath, JSON.stringify(tamperedManifest, null, 2));
+    const traversalResult = await verifyCapsule(fixedCapsuleDir);
+    assert.equal(traversalResult.ok, false);
+    assert.ok(traversalResult.errors.some((e) => e.includes('Unsafe capsule path')));
+
+    const traversalJourneyPath = join(fixedCapsuleDir, 'traversal-journey.json');
+    const jCopy = JSON.parse(JSON.stringify(repaired.journey));
+    jCopy.steps[0].evidencePaths = ['../capsule-manifest.json'];
+    await writeFile(traversalJourneyPath, JSON.stringify(jCopy, null, 2));
+    const safeBundle = await loadJourneyBundle(traversalJourneyPath);
+    assert.equal(safeBundle.files['../capsule-manifest.json'], undefined);
+
+    const renderedHtml = renderPassportHtml(fixedPassport);
+    assert.match(renderedHtml, /Content-Security-Policy/);
   });
 });
