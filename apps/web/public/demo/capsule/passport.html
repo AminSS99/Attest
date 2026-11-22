@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">
 <title>Release Passport — app.pulsefit 1.3.0</title>
 <style>
 :root{font-family:-apple-system,"SF Pro Text",Helvetica,Arial,sans-serif;color:#16232e}
@@ -29,7 +30,7 @@ blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
   <h1>Release Passport <span class="badge hold">HOLD</span></h1>
   <p class="meta"><strong>app.pulsefit</strong> ·
   1.2.0 &rarr; <strong>1.3.0</strong> ·
-  Passport <code>RP-df5e2bb7d28228def164bfcd</code> · created 2026-09-25T09:07:18.570Z</p>
+  Passport <code>RP-0e9340fd60732f1e51f63f56</code> · created 2026-11-22T10:17:54.474Z</p>
   <p class="meta">base <code>pulsefit-1.2.0.apk</code> (7068eacb9f82&hellip;)
    &rarr; candidate <code>pulsefit-1.3.0.apk</code> (a52a1a64eb48&hellip;)</p>
   <p>3 confirmed contradictions between the release candidate and the promises made about it (declarations, claims, or approved journeys).<br>3 changes require human review before submission.</p>
@@ -85,22 +86,22 @@ blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
 <section class="finding high">
   <header><span class="sev">HIGH</span>
     <span class="state">confirmed contradiction</span>
-    <code>F-69cb7b1c5b657a23</code> · <code>JT-001</code></header>
-  <h3>Reviewer journey failed at a recorded step</h3>
-  <p>Reviewer journey &quot;Reviewer reaches premium AI feature&quot; failed at step 4 (&quot;Tap &quot;Premium AI Coach&quot;&quot;): expected &quot;Premium AI Coach screen with the plan selector visible&quot; but observed &quot;App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change&quot;. The approved reviewer path no longer completes on this build.</p>
-  <p class="cmp"><strong>Comparison:</strong> <code>approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)</code></p>
-  <p class="rem"><strong>Remediation:</strong> Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline.</p>
-  <details><summary>Evidence (3)</summary><ul><li><span class="cls">observed</span> <code>journey</code> — JN-002681a38dec753e6ac1f4de#step-4<blockquote>App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change</blockquote></li><li><span class="cls">attested</span> <code>journey</code> — JN-5d8f98a4b40a3c1f5bad8bd1#step-4:expected<blockquote>Premium AI Coach screen with the plan selector visible</blockquote></li><li><span class="cls">observed</span> <code>journey</code> — JC-f7515b101b6f2ac2445b287d<blockquote>FAILED at step 4 of 5: Candidate step 4 failed: expected &quot;Premium AI Coach screen with the plan selector visible&quot; but observed &quot;App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change&quot;.</blockquote></li></ul></details>
-</section>
-<section class="finding high">
-  <header><span class="sev">HIGH</span>
-    <span class="state">confirmed contradiction</span>
     <code>F-7716dd7492743738</code> · <code>TG-001</code></header>
   <h3>New dangerous permission not covered by Data Safety answers</h3>
   <p>Build declares android.permission.CAMERA (Camera (photos)), but the Data Safety form does not list &quot;photos_and_videos.photos&quot;. One of them is wrong.</p>
   <p class="cmp"><strong>Comparison:</strong> <code>observed(android.permission.CAMERA) vs declared(collectedDataTypes missing &quot;photos_and_videos.photos&quot;)</code></p>
   <p class="rem"><strong>Remediation:</strong> Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it.</p>
   <details><summary>Evidence (2)</summary><ul><li><span class="cls">observed</span> <code>build_fact</code> — manifest:uses-permission android.permission.CAMERA</li><li><span class="cls">declared</span> <code>data_safety</code> — data-safety:collectedDataTypes (&quot;photos_and_videos.photos&quot; absent)<blockquote>play-console-export (stale)</blockquote></li></ul></details>
+</section>
+<section class="finding high">
+  <header><span class="sev">HIGH</span>
+    <span class="state">confirmed contradiction</span>
+    <code>F-fc33ab008fe0c8e3</code> · <code>JT-001</code></header>
+  <h3>Reviewer journey failed at a recorded step</h3>
+  <p>Reviewer journey &quot;Reviewer reaches premium AI feature&quot; failed at step 4 (&quot;Tap &quot;Premium AI Coach&quot;&quot;): expected &quot;Premium AI Coach screen with the plan selector visible&quot; but observed &quot;App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change&quot;. The approved reviewer path no longer completes on this build.</p>
+  <p class="cmp"><strong>Comparison:</strong> <code>approved(JN-b29f325a555b42d496a3ec59 step 4 pass) vs observed(JN-4016d8cca62d46f9a6c8f02f step 4 fail)</code></p>
+  <p class="rem"><strong>Remediation:</strong> Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline.</p>
+  <details><summary>Evidence (3)</summary><ul><li><span class="cls">observed</span> <code>journey</code> — JN-4016d8cca62d46f9a6c8f02f#step-4<blockquote>App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change</blockquote></li><li><span class="cls">attested</span> <code>journey</code> — JN-b29f325a555b42d496a3ec59#step-4:expected<blockquote>Premium AI Coach screen with the plan selector visible</blockquote></li><li><span class="cls">observed</span> <code>journey</code> — JC-2fa42fb637def527824f2831<blockquote>FAILED at step 4 of 5: Candidate step 4 failed: expected &quot;Premium AI Coach screen with the plan selector visible&quot; but observed &quot;App shows &quot;Something went wrong&quot; — Premium AI Coach fails to load after the 1.3 analytics change&quot;.</blockquote></li></ul></details>
 </section>
 <section class="finding medium">
   <header><span class="sev">MEDIUM</span>
@@ -129,9 +130,9 @@ blockquote{margin:.3rem 0 .3rem 1rem;color:#52616e;font-style:italic}
 <section class="finding journey blocker">
   <header><span class="sev">JOURNEY</span>
     <span class="state">FAIL</span>
-    <code>JN-002681a38dec753e6ac1f4de</code> · <code>reviewer</code> · 4 steps</header>
+    <code>JN-4016d8cca62d46f9a6c8f02f</code> · <code>reviewer</code> · 4 steps</header>
   <h3>Reviewer reaches premium AI feature</h3>
-  <p class="meta">recorded 2026-09-25T09:07:18.568Z · last run 2026-09-25T09:07:18.569Z · device <code>emulator-5554</code> · build <code>a52a1a64eb48…</code></p>
+  <p class="meta">recorded 2026-11-22T10:17:54.472Z · last run 2026-11-22T10:17:54.473Z · device <code>emulator-5554</code> · build <code>a52a1a64eb48…</code></p>
   <p class="rem"><strong>First failed step:</strong> 4 — Tap &quot;Premium AI Coach&quot;</p><p class="rem"><strong>First changed step vs approved baseline:</strong> 4</p>
   <p class="meta">credential reference: <strong>Reviewer account pulsefit.reviewer@attest.example — password + TOTP in team vault (ref only)</strong> · expires 2027-01-15T00:00:00.000Z · readiness <strong>ready</strong> (reference only — no secret stored)</p>
   <table><thead><tr><th>#</th><th>Exact step</th><th>Status</th><th>Expected</th><th>Observed</th><th>Screenshot</th></tr></thead>

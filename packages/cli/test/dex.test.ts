@@ -51,4 +51,20 @@ describe('DEX string table', () => {
   it('rejects non-dex bytes', () => {
     assert.throws(() => extractDexStrings(Buffer.from('nope')), DexError);
   });
+
+  it('bounds runaway NUL-less strings and overlong domain strings', () => {
+    const big = Buffer.alloc(128 * 1024, 0x41);
+    // Write a valid DEX header with 1 string pointing into the NUL-less payload.
+    big.write('dex\n035\0', 0, 'ascii');
+    big.writeUInt32LE(1, 0x38);
+    big.writeUInt32LE(0x70, 0x3c);
+    big.writeUInt32LE(0x80, 0x70);
+    big[0x80] = 0x01; // 1-byte uleb128
+    const strings = extractDexStrings(big);
+    assert.equal(strings.length, 1);
+    assert.ok(strings[0]!.length <= 65_536);
+
+    const longUrl = 'https://evil.example/' + 'a'.repeat(5000);
+    assert.deepEqual(extractDomains([longUrl]), []);
+  });
 });

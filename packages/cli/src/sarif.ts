@@ -31,7 +31,7 @@ export function toSarif(findings: Finding[], artifactFileName: string): string {
           driver: {
             name: 'Attest',
             version: CLI_VERSION,
-            informationUri: 'https://github.com/attest-dev/attest',
+            informationUri: 'https://github.com/AminSS99/Attest',
             rules: [...TRUTH_GAP_RULES, ...JOURNEY_RULES].map((r) => ({
               id: r.id,
               name: r.title,

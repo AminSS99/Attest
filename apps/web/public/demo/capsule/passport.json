@@ -22,7 +22,7 @@
     "versionName": "1.3.0",
     "versionCode": "10300"
   },
-  "createdAt": "2026-09-25T09:07:18.570Z",
+  "createdAt": "2026-11-22T10:17:54.474Z",
   "toolset": {
     "cli": "0.1.0",
     "ruleset": "core-truth-gap/2026.09"
@@ -81,7 +81,7 @@
     ],
     "removedExportedComponents": [],
     "packageMismatch": false,
-    "createdAt": "2026-09-25T09:07:18.564Z"
+    "createdAt": "2026-11-22T10:17:54.468Z"
   },
   "claims": [
     {
@@ -832,38 +832,6 @@
     },
     {
       "schemaVersion": "attest.finding/1",
-      "id": "F-69cb7b1c5b657a23",
-      "ruleId": "JT-001",
-      "title": "Reviewer journey failed at a recorded step",
-      "severity": "high",
-      "state": "confirmed_contradiction",
-      "subject": "reviewer-premium-ai-1.3.0",
-      "summary": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.",
-      "comparison": "approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)",
-      "sources": [
-        {
-          "kind": "journey",
-          "evidenceClass": "observed",
-          "ref": "JN-002681a38dec753e6ac1f4de#step-4",
-          "excerpt": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change"
-        },
-        {
-          "kind": "journey",
-          "evidenceClass": "attested",
-          "ref": "JN-5d8f98a4b40a3c1f5bad8bd1#step-4:expected",
-          "excerpt": "Premium AI Coach screen with the plan selector visible"
-        },
-        {
-          "kind": "journey",
-          "evidenceClass": "observed",
-          "ref": "JC-f7515b101b6f2ac2445b287d",
-          "excerpt": "FAILED at step 4 of 5: Candidate step 4 failed: expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\"."
-        }
-      ],
-      "remediation": "Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
-    },
-    {
-      "schemaVersion": "attest.finding/1",
       "id": "F-7716dd7492743738",
       "ruleId": "TG-001",
       "title": "New dangerous permission not covered by Data Safety answers",
@@ -886,11 +854,43 @@
         }
       ],
       "remediation": "Update the Data Safety form to disclose the data type, or remove the permission and the code path that requires it."
+    },
+    {
+      "schemaVersion": "attest.finding/1",
+      "id": "F-fc33ab008fe0c8e3",
+      "ruleId": "JT-001",
+      "title": "Reviewer journey failed at a recorded step",
+      "severity": "high",
+      "state": "confirmed_contradiction",
+      "subject": "reviewer-premium-ai-1.3.0",
+      "summary": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.",
+      "comparison": "approved(JN-b29f325a555b42d496a3ec59 step 4 pass) vs observed(JN-4016d8cca62d46f9a6c8f02f step 4 fail)",
+      "sources": [
+        {
+          "kind": "journey",
+          "evidenceClass": "observed",
+          "ref": "JN-4016d8cca62d46f9a6c8f02f#step-4",
+          "excerpt": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change"
+        },
+        {
+          "kind": "journey",
+          "evidenceClass": "attested",
+          "ref": "JN-b29f325a555b42d496a3ec59#step-4:expected",
+          "excerpt": "Premium AI Coach screen with the plan selector visible"
+        },
+        {
+          "kind": "journey",
+          "evidenceClass": "observed",
+          "ref": "JC-2fa42fb637def527824f2831",
+          "excerpt": "FAILED at step 4 of 5: Candidate step 4 failed: expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\"."
+        }
+      ],
+      "remediation": "Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
     }
   ],
   "journeys": [
     {
-      "id": "JN-002681a38dec753e6ac1f4de",
+      "id": "JN-4016d8cca62d46f9a6c8f02f",
       "kind": "reviewer",
       "name": "reviewer-premium-ai-1.3.0",
       "title": "Reviewer reaches premium AI feature",
@@ -898,8 +898,8 @@
       "stepCount": 4,
       "firstFailedStep": 4,
       "firstChangedStep": 4,
-      "recordedAt": "2026-09-25T09:07:18.568Z",
-      "lastRunAt": "2026-09-25T09:07:18.569Z",
+      "recordedAt": "2026-11-22T10:17:54.472Z",
+      "lastRunAt": "2026-11-22T10:17:54.473Z",
       "artifactSha256": "a52a1a64eb48350db704740ee5adabe13456acd98efaf8a8a4370c68e8ba753d",
       "device": {
         "serial": "emulator-5554",
@@ -919,7 +919,7 @@
           "expectedState": "PulseFit home screen with the \"Start workout\" button visible",
           "observedState": "Home screen shown with \"Start workout\"",
           "status": "pass",
-          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "capturedAt": "2026-11-22T10:17:54.471Z",
           "activity": "app.pulsefit.MainActivity",
           "screenshot": {
             "path": "reviewer-premium-ai-1.3.0/step-001.png",
@@ -936,7 +936,7 @@
           "expectedState": "Workout dashboard for the signed-in reviewer",
           "observedState": "Dashboard shown for reviewer account",
           "status": "pass",
-          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "capturedAt": "2026-11-22T10:17:54.472Z",
           "activity": "app.pulsefit.MainActivity",
           "screenshot": {
             "path": "reviewer-premium-ai-1.3.0/step-002.png",
@@ -952,7 +952,7 @@
           "expectedState": "Settings screen with Account, Privacy, and Premium AI entries",
           "observedState": "Settings screen open (app.pulsefit.SettingsActivity)",
           "status": "pass",
-          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "capturedAt": "2026-11-22T10:17:54.472Z",
           "activity": "app.pulsefit.SettingsActivity",
           "screenshot": {
             "path": "reviewer-premium-ai-1.3.0/step-003.png",
@@ -968,7 +968,7 @@
           "expectedState": "Premium AI Coach screen with the plan selector visible",
           "observedState": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change",
           "status": "fail",
-          "capturedAt": "2026-09-25T09:07:18.568Z",
+          "capturedAt": "2026-11-22T10:17:54.472Z",
           "activity": "app.pulsefit.MainActivity",
           "screenshot": {
             "path": "reviewer-premium-ai-1.3.0/step-004.png",
@@ -996,5 +996,5 @@
     ],
     "status": "pending"
   },
-  "id": "RP-df5e2bb7d28228def164bfcd"
+  "id": "RP-0e9340fd60732f1e51f63f56"
 }

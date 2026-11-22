@@ -7,7 +7,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { basename } from 'node:path';
 
 import {
@@ -25,10 +25,16 @@ import { detectSdks, extractDomains } from './sdk-signatures.js';
 import { ZipArchive } from './zip.js';
 
 export const CLI_VERSION = '0.1.0';
+export const MAX_ARTIFACT_BYTES = 512 * 1024 * 1024;
 
 const COMPONENT_KINDS = ['activity', 'activity-alias', 'service', 'receiver', 'provider'] as const;
 
 export async function inspectArtifactFile(path: string): Promise<BuildFacts> {
+  const info = await stat(path);
+  if (!info.isFile()) throw new Error(`Artifact "${path}" is not a regular file.`);
+  if (info.size > MAX_ARTIFACT_BYTES) {
+    throw new Error(`Artifact "${path}" exceeds maximum supported size (${MAX_ARTIFACT_BYTES} bytes).`);
+  }
   const bytes = await readFile(path);
   return inspectArtifact(bytes, basename(path));
 }

@@ -165,7 +165,7 @@ runs:
       run: |
         set -euo pipefail
         cd "$ROOT"
-        npm ci
+        npm ci --ignore-scripts
         npm run build
         if [ ! -f "packages/cli/dist/src/cli.js" ]; then
           echo "::error::Build finished but packages/cli/dist/src/cli.js is missing."

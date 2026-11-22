@@ -15,6 +15,7 @@ import { dirname, join, resolve } from 'node:path';
 import { JOURNEY_SCHEMA_VERSION } from 'attest-schema';
 
 import { credentialReadiness } from './journey.js';
+import { resolveSafeChild } from './safe-path.js';
 
 export const ATTEST_CONFIG_SCHEMA_VERSION = 'attest.config/1' as const;
 export const MIN_NODE_MAJOR = 20;
@@ -243,7 +244,35 @@ function adbAvailable(): { found: boolean; detail: string } {
 const SECRET_KEY_PATTERN =
   /(password|passwd|secret|api[_-]?key|auth[_-]?token|access[_-]?token|private[_-]?key|client[_-]?secret|bearer|aws_secret|aws_access|ghp_|gho_|ghu_|sk-live|sk-test|xox[bap]-|-----BEGIN [A-Z ]*PRIVATE KEY-----)/i;
 
+function scanObjectForSecrets(node: unknown): string | undefined {
+  if (!node || typeof node !== 'object') return undefined;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const hit = scanObjectForSecrets(item);
+      if (hit) return hit;
+    }
+    return undefined;
+  }
+  for (const [key, val] of Object.entries(node as Record<string, unknown>)) {
+    if (key === 'schemaVersion' || key === 'source') continue;
+    if (typeof val === 'string' && val.trim().length > 0) {
+      if (SECRET_KEY_PATTERN.test(key)) return `key "${key}" looks like a secret value`;
+      if (/BEGIN [A-Z ]*PRIVATE KEY/.test(val)) return `value for "${key}" looks like an embedded private key`;
+    } else if (val && typeof val === 'object') {
+      const hit = scanObjectForSecrets(val);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
+}
+
 function findSecretHint(raw: string): string | undefined {
+  try {
+    const jsonHit = scanObjectForSecrets(JSON.parse(raw));
+    if (jsonHit) return jsonHit;
+  } catch {
+    // Fall back to line scan if raw is malformed JSON.
+  }
   // Look for secret-like keys with an assigned value, not prose mentioning the word.
   const lines = raw.split('\n');
   for (const line of lines) {
@@ -521,8 +550,20 @@ export async function doctorProject(
     }
   }
 
-  // 8. Output location writable.
-  const outDir = resolve(projectRoot, config.outDir ?? 'attest-out');
+  // 8. Output location writable (must remain inside projectRoot).
+  const rawOutDir = config.outDir ?? 'attest-out';
+  let outDir: string;
+  try {
+    outDir = resolveSafeChild(projectRoot, rawOutDir);
+  } catch {
+    fail({
+      name: 'outDir',
+      status: 'fail',
+      detail: `output directory "${rawOutDir}" escapes project root`,
+      hint: 'Point outDir at a relative directory inside the project root in .attest/config.json.',
+    });
+    return { ok: !blockingFailed, results };
+  }
   try {
     await mkdir(outDir, { recursive: true });
     const probe = join(outDir, '.attest-write-test');

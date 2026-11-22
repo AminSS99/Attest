@@ -45,7 +45,7 @@ export const SDK_SIGNATURES: readonly SdkSignature[] = [
 export function detectSdks(dexStrings: Iterable<string>): SdkFact[] {
   const found = new Map<string, Set<string>>();
   for (const s of dexStrings) {
-    if (s.length < 8 || s.charCodeAt(0) !== 0x4c /* 'L' */) continue;
+    if (s.length < 8 || s.length > 1024 || s.charCodeAt(0) !== 0x4c /* 'L' */) continue;
     for (const sig of SDK_SIGNATURES) {
       for (const prefix of sig.packages) {
         if (s.startsWith('L' + prefix + '/')) {
@@ -70,7 +70,7 @@ export function detectSdks(dexStrings: Iterable<string>): SdkFact[] {
 }
 
 const URL_HOST_RE =
-  /https?:\/\/([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?){1,})/gi;
+  /https?:\/\/([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?){1,16})/gi;
 
 /** Hosts that appear in binaries constantly and are never user-data destinations. */
 const IGNORED_HOST_SUFFIXES = [
@@ -106,7 +106,7 @@ function hasPlausibleTld(host: string): boolean {
 export function extractDomains(dexStrings: Iterable<string>): string[] {
   const hosts = new Set<string>();
   for (const s of dexStrings) {
-    if (!s.includes('http')) continue;
+    if (s.length > 4096 || !s.includes('http')) continue;
     URL_HOST_RE.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = URL_HOST_RE.exec(s)) !== null) {

@@ -48,7 +48,11 @@ export class AdbDevice {
   constructor(
     readonly serial: string,
     private readonly exec: AdbExec = spawnAdb,
-  ) {}
+  ) {
+    if (!serial || serial.startsWith('-') || !/^[A-Za-z0-9._:-]+$/.test(serial)) {
+      throw new Error(`Invalid ADB device serial "${serial}".`);
+    }
+  }
 
   private run(...args: string[]): Promise<Buffer> {
     return this.exec(['-s', this.serial, ...args]);

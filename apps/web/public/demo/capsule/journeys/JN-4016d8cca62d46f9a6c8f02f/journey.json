@@ -18,7 +18,7 @@
       "expectedState": "PulseFit home screen with the \"Start workout\" button visible",
       "observedState": "Home screen shown with \"Start workout\"",
       "status": "pass",
-      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "capturedAt": "2026-11-22T10:17:54.471Z",
       "activity": "app.pulsefit.MainActivity",
       "screenshot": {
         "path": "reviewer-premium-ai-1.3.0/step-001.png",
@@ -35,7 +35,7 @@
       "expectedState": "Workout dashboard for the signed-in reviewer",
       "observedState": "Dashboard shown for reviewer account",
       "status": "pass",
-      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "capturedAt": "2026-11-22T10:17:54.472Z",
       "activity": "app.pulsefit.MainActivity",
       "screenshot": {
         "path": "reviewer-premium-ai-1.3.0/step-002.png",
@@ -51,7 +51,7 @@
       "expectedState": "Settings screen with Account, Privacy, and Premium AI entries",
       "observedState": "Settings screen open (app.pulsefit.SettingsActivity)",
       "status": "pass",
-      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "capturedAt": "2026-11-22T10:17:54.472Z",
       "activity": "app.pulsefit.SettingsActivity",
       "screenshot": {
         "path": "reviewer-premium-ai-1.3.0/step-003.png",
@@ -67,7 +67,7 @@
       "expectedState": "Premium AI Coach screen with the plan selector visible",
       "observedState": "App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change",
       "status": "fail",
-      "capturedAt": "2026-09-25T09:07:18.568Z",
+      "capturedAt": "2026-11-22T10:17:54.472Z",
       "activity": "app.pulsefit.MainActivity",
       "screenshot": {
         "path": "reviewer-premium-ai-1.3.0/step-004.png",
@@ -84,9 +84,9 @@
     "expiresAt": "2027-01-15T00:00:00.000Z"
   },
   "recordedBy": "human-guided",
-  "recordedAt": "2026-09-25T09:07:18.568Z",
-  "lastRunAt": "2026-09-25T09:07:18.569Z",
+  "recordedAt": "2026-11-22T10:17:54.472Z",
+  "lastRunAt": "2026-11-22T10:17:54.473Z",
   "lastRunResult": "fail",
-  "id": "JN-002681a38dec753e6ac1f4de",
+  "id": "JN-4016d8cca62d46f9a6c8f02f",
   "firstChangedStep": 4
 }

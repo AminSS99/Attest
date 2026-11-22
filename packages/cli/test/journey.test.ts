@@ -422,6 +422,11 @@ describe('ADB bridge', () => {
     });
     await assert.rejects(device.assertConnected(), /Install Android platform-tools/);
   });
+
+  it('rejects malformed or option-like ADB serials', () => {
+    assert.throws(() => new AdbDevice('-e'), /Invalid ADB device serial/);
+    assert.throws(() => new AdbDevice('emulator 5554'), /Invalid ADB device serial/);
+  });
 });
 
 describe('journey bundle round-trip', () => {

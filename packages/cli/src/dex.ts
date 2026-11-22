@@ -10,6 +10,7 @@ export class DexError extends Error {}
 
 const DEX_HEADER_SIZE = 0x70;
 const MAX_STRINGS = 4_000_000;
+const MAX_DEX_STRING_BYTES = 65_536;
 
 export function isDex(buf: Buffer): boolean {
   return buf.length >= 8 && buf.readUInt32LE(0) === 0x0a786564; // "dex\n" LE
@@ -34,12 +35,17 @@ export function extractDexStrings(buf: Buffer): string[] {
       out[i] = '';
       continue;
     }
-    // uleb128 utf16 length (unused for sizing; data is NUL-terminated MUTF-8)
+    // uleb128 utf16 length (max 5 bytes per DEX spec; data is NUL-terminated MUTF-8)
     let p = dataOff;
-    while (p < buf.length && buf.readUInt8(p) & 0x80) p++;
-    p++;
+    let ulebSteps = 0;
+    while (p < buf.length && ulebSteps < 5 && (buf.readUInt8(p) & 0x80) !== 0) {
+      p++;
+      ulebSteps++;
+    }
+    if (p < buf.length) p++;
     const start = p;
-    while (p < buf.length && buf.readUInt8(p) !== 0) p++;
+    const limit = Math.min(buf.length, start + MAX_DEX_STRING_BYTES);
+    while (p < limit && buf.readUInt8(p) !== 0) p++;
     out[i] = buf.toString('utf8', start, p);
   }
   return out;

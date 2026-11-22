@@ -132,4 +132,17 @@ describe('attest doctor', () => {
     const report = await doctorProject({ projectRoot: root });
     assert.equal(report.ok, false);
   });
+
+  it('catches secrets in minified JSON and rejects escaping outDir', async () => {
+    const root = await scaffold({ reviewerTwin: { enabled: false }, journeys: [] });
+    const configPath = join(root, '.attest', 'config.json');
+    const doc = JSON.parse(await readFile(configPath, 'utf8'));
+    doc.nested = { apiKey: 'sk-live-minified-secret-123456' };
+    doc.outDir = '../outside-attest';
+    await writeFile(configPath, JSON.stringify(doc), 'utf8');
+    const report = await doctorProject({ projectRoot: root });
+    assert.equal(report.ok, false);
+    assert.equal(report.results.find((r) => r.name === 'secrets')?.status, 'fail');
+    assert.equal(report.results.find((r) => r.name === 'outDir')?.status, 'fail');
+  });
 });

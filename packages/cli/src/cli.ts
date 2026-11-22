@@ -159,7 +159,11 @@ async function journeyDirOf(path: string): Promise<string> {
 async function loadComparisons(flags: Map<string, string>): Promise<JourneyComparison[]> {
   const out: JourneyComparison[] = [];
   for (const p of csvPaths(flags.get('comparison'))) {
-    out.push(JSON.parse(await readFile(p, 'utf8')) as JourneyComparison);
+    const parsed = JSON.parse(await readFile(p, 'utf8')) as Partial<JourneyComparison>;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !parsed.candidate?.id) {
+      throw new Error(`${p} is not a valid journey comparison document.`);
+    }
+    out.push(parsed as JourneyComparison);
   }
   return out;
 }
@@ -315,8 +319,12 @@ async function sealCommand(flags: Map<string, string>): Promise<number> {
     if (!(await hasCapsuleManifest(fromDir))) {
       return usage(`seal --from ${fromDir} is not a sealed capsule (missing ${CAPSULE_MANIFEST_NAME})`);
     }
-    const { cp } = await import('node:fs/promises');
-    await cp(fromDir, outDir, { recursive: true });
+    const { cp, lstat } = await import('node:fs/promises');
+    await cp(fromDir, outDir, {
+      recursive: true,
+      dereference: false,
+      filter: async (src) => !(await lstat(src)).isSymbolicLink(),
+    });
     await resealCapsule(outDir, passport);
     console.log(`Evidence Capsule resealed from ${fromDir} to ${outDir} with Passport ${passport.id}.`);
     return 0;

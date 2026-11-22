@@ -7,7 +7,7 @@
         "driver": {
           "name": "Attest",
           "version": "0.1.0",
-          "informationUri": "https://github.com/attest-dev/attest",
+          "informationUri": "https://github.com/AminSS99/Attest",
           "rules": [
             {
               "id": "TG-001",
@@ -201,30 +201,6 @@
           }
         },
         {
-          "ruleId": "JT-001",
-          "level": "error",
-          "message": {
-            "text": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.\n\nComparison: approved(JN-5d8f98a4b40a3c1f5bad8bd1 step 4 pass) vs observed(JN-002681a38dec753e6ac1f4de step 4 fail)\n\nRemediation: Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "pulsefit-1.3.0.apk"
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "attest/finding-id": "F-69cb7b1c5b657a23"
-          },
-          "properties": {
-            "state": "confirmed_contradiction",
-            "severity": "high",
-            "subject": "reviewer-premium-ai-1.3.0"
-          }
-        },
-        {
           "ruleId": "TG-001",
           "level": "error",
           "message": {
@@ -246,6 +222,30 @@
             "state": "confirmed_contradiction",
             "severity": "high",
             "subject": "android.permission.CAMERA"
+          }
+        },
+        {
+          "ruleId": "JT-001",
+          "level": "error",
+          "message": {
+            "text": "Reviewer journey \"Reviewer reaches premium AI feature\" failed at step 4 (\"Tap \"Premium AI Coach\"\"): expected \"Premium AI Coach screen with the plan selector visible\" but observed \"App shows \"Something went wrong\" — Premium AI Coach fails to load after the 1.3 analytics change\". The approved reviewer path no longer completes on this build.\n\nComparison: approved(JN-b29f325a555b42d496a3ec59 step 4 pass) vs observed(JN-4016d8cca62d46f9a6c8f02f step 4 fail)\n\nRemediation: Fix the app or reviewer setup so the approved flow completes, then re-record the journey. If the flow intentionally changed, update the reviewer instructions and re-approve the baseline."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "pulsefit-1.3.0.apk"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "attest/finding-id": "F-fc33ab008fe0c8e3"
+          },
+          "properties": {
+            "state": "confirmed_contradiction",
+            "severity": "high",
+            "subject": "reviewer-premium-ai-1.3.0"
           }
         }
       ]
