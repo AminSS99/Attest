@@ -7,3 +7,5 @@ attest-out/
 apps/web/public/analyzer.worker.js
 apps/web/public/demo/*.apk
 .vercel
+PRODUCT_PLAN.md
+docs/internal/

@@ -154,7 +154,6 @@ Attest is an early open-source developer preview (**Android only**):
 | [`examples/github-action.yml`](examples/github-action.yml) | Example pull-request gate workflow |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Pipeline architecture, parsers, and trust model |
 | [`docs/REAL_RELEASES.md`](docs/REAL_RELEASES.md) | Findings and parser fixes from testing on real public APKs |
-| [`PRODUCT_PLAN.md`](PRODUCT_PLAN.md) | Product specification and roadmap |
 
 ## Development
 

@@ -10,10 +10,8 @@
 # github.action_path/../../..). An external app repo must vendor the full
 # Attest source (e.g. clone to attest-vendor/) and use
 # `./attest-vendor/.github/actions/attest` instead — copying just the action
-# directory fails clearly at the resolve step. See
-# docs/internal/DESIGN_PARTNER_PILOT.md §4. The public Action reference passed on a
-# hosted runner with synthetic fixtures; see docs/internal/HOSTED_ACTION_RUN.md. A real
-# partner release still needs validation.
+# directory fails clearly at the resolve step. The Action has been verified on
+# GitHub-hosted runners with synthetic fixtures.
 
 name: attest
 
